@@ -13,10 +13,12 @@ import {
   initiateEmailSignIn,
   initiateEmailSignUp,
   useFirebase,
+  setDocumentNonBlocking,
 } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber } from 'firebase/auth';
+import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber, User } from 'firebase/auth';
 import CheckEmailCard from '@/components/auth/CheckEmailCard';
+import { doc } from 'firebase/firestore';
 
 declare global {
   interface Window {
@@ -31,7 +33,7 @@ export default function Home() {
   );
   const [authMethod, setAuthMethod] = useState('email');
   const { toast } = useToast();
-  const { auth, user, isUserLoading } = useFirebase();
+  const { auth, user, isUserLoading, firestore } = useFirebase();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -47,14 +49,31 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  
+  // This effect will run when the user's auth state changes.
   useEffect(() => {
-    if (user) {
-      if (user.emailVerified || user.phoneNumber) {
-        router.push('/dashboard');
-      }
+    // If we are in 'check-email' mode and the user becomes available...
+    if (authMode === 'check-email' && user) {
+      // Reload user to get the latest emailVerified status
+      user.reload().then(() => {
+        if (user.emailVerified) {
+          toast({
+            title: 'Email Verified!',
+            description: 'Your account is active. Redirecting...',
+          });
+          router.push('/dashboard');
+        }
+      });
     }
-  }, [user, router]);
+    
+    if(user) {
+        if (user.emailVerified || user.phoneNumber) {
+            router.push('/dashboard');
+        }
+    }
+    
+  }, [user, authMode, router, toast]);
+
 
   const authBgImage = PlaceHolderImages.find(
     (img) => img.id === 'auth-background'
@@ -85,6 +104,25 @@ export default function Home() {
   const handleBackFromOtp = () => {
     setAuthMode(authMethod === 'email' ? 'signin' : 'signup');
   };
+  
+  const createUserDocument = async (user: User, extraData = {}) => {
+    const userRef = doc(firestore, 'users', user.uid);
+    const threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+
+    const userData = {
+      id: user.uid,
+      email: user.email,
+      firstName: formData.name.split(' ')[0] || '',
+      lastName: formData.name.split(' ').slice(1).join(' ') || '',
+      phoneNumber: user.phoneNumber,
+      accountStatus: 'Active',
+      freeAccessExpiryDate: threeMonthsFromNow.toISOString(),
+      ...extraData,
+    };
+    
+    setDocumentNonBlocking(userRef, userData, { merge: true });
+  }
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
@@ -94,6 +132,8 @@ export default function Home() {
         showAlert('destructive', 'Verification Needed', 'Please verify your email before logging in.');
         await sendEmailVerification(userCredential.user);
         setAuthMode('check-email');
+      } else if (userCredential.user) {
+        router.push('/dashboard');
       }
     } catch (error: any) {
       showAlert('destructive', 'Login Failed', 'Incorrect email or password.');
@@ -119,6 +159,7 @@ export default function Home() {
     try {
       const userCredential = await initiateEmailSignUp(auth, formData.email, formData.password);
       if (userCredential && userCredential.user) {
+        await createUserDocument(userCredential.user);
         await sendEmailVerification(userCredential.user);
         setAuthMode('check-email');
       }
@@ -170,8 +211,11 @@ export default function Home() {
     setIsLoading(true);
     try {
       if (window.confirmationResult) {
-        await window.confirmationResult.confirm(otp);
-        // The onAuthStateChanged listener in useFirebase will handle the redirect
+        const userCredential = await window.confirmationResult.confirm(otp);
+        if (userCredential.user) {
+            await createUserDocument(userCredential.user);
+            router.push('/dashboard');
+        }
       } else {
         throw new Error("No confirmation result found.");
       }
@@ -189,9 +233,9 @@ export default function Home() {
   };
 
   const renderAuthCard = () => {
-    if (isUserLoading) {
+    if (isUserLoading && authMode !== 'check-email') {
       return (
-         <div className="flex flex-col items-center justify-center space-y-4">
+         <div className="flex flex-col items-center justify-center space-y-4 h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>

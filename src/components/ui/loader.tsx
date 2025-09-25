@@ -1,42 +1,49 @@
 'use client';
 import { motion } from 'framer-motion';
 
-interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  label?: string;
-}
-
-export function LoadingSpinner({ size = 'md', label }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-  };
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <motion.div
-        className={`${sizeClasses[size]} border-2 border-muted border-t-primary rounded-full`}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-      />
-      {label && <p className="text-muted-foreground">{label}</p>}
-    </div>
-  );
-}
-
 export function PageLoader() {
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-       <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-base">AC</span>
-                </div>
-                <span className="text-lg font-bold text-primary">Africonnect</span>
-            </div>
-             <LoadingSpinner size="md" label="Loading..." />
-        </div>
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center justify-center gap-6">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0.8 }}
+          animate={{ scale: 1.1, opacity: 1 }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'easeInOut',
+          }}
+          className="relative w-24 h-24 flex items-center justify-center"
+        >
+          {/* Pulsing ring effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-primary/20"
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.5, 0, 0.5],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'circOut',
+            }}
+          />
+          {/* The Logo */}
+          <div className="relative w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-2xl">AC</span>
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="text-lg font-semibold text-muted-foreground tracking-widest"
+        >
+          LOADING...
+        </motion.div>
+      </div>
     </div>
   );
 }

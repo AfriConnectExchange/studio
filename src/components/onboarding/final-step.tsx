@@ -8,7 +8,7 @@ export function FinalStep() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/marketplace');
     }, 3000); 
 
     return () => clearTimeout(timer);
@@ -23,7 +23,7 @@ export function FinalStep() {
       </div>
       <h2 className="text-3xl font-bold mb-4">All Set!</h2>
       <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-        Your profile is complete. We are now redirecting you to your dashboard.
+        Your profile is complete. We are now redirecting you to the marketplace.
       </p>
       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
     </div>

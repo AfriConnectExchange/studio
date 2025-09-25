@@ -1,3 +1,4 @@
+'use client';
 import { Logo } from '@/components/logo';
 import { UserNav } from '@/components/dashboard/user-nav';
 import Link from 'next/link';
@@ -10,7 +11,10 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 flex items-center">
-          <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
+          <Link
+            href="/marketplace"
+            className="mr-6 flex items-center space-x-2"
+          >
             <Logo withText={false} />
             <span className="hidden font-bold sm:inline-block">
               Africonnect
@@ -18,10 +22,10 @@ export function Header() {
           </Link>
           <nav className="hidden items-center gap-6 text-sm md:flex">
             <Link
-              href="/dashboard"
+              href="/marketplace"
               className="transition-colors hover:text-foreground/80 text-foreground"
             >
-              Dashboard
+              Marketplace
             </Link>
             <Link
               href="/profile"
@@ -50,8 +54,8 @@ export function Header() {
                     <Logo withText={false} />
                     <span className="sr-only">Africonnect</span>
                   </Link>
-                  <Link href="/dashboard" className="hover:text-foreground">
-                    Dashboard
+                  <Link href="/marketplace" className="hover:text-foreground">
+                    Marketplace
                   </Link>
                   <Link
                     href="/profile"

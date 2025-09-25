@@ -64,7 +64,7 @@ export default function Home() {
     if (user) {
       if (user.emailVerified || user.phoneNumber) {
         if (userProfile && userProfile.onboardingCompleted) {
-          router.push('/dashboard');
+          router.push('/marketplace');
         } else {
            // This check prevents redirecting if we are already on a public page and no user document exists yet.
           if (userProfile !== undefined) {

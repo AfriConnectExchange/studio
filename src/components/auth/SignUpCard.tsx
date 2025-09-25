@@ -5,6 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { AnimatedButton } from '../ui/animated-button';
+import { motion } from 'framer-motion';
 
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -26,6 +27,10 @@ export default function SignUpCard({
   showAlert,
   onSwitch,
 }: Props) {
+  const tabs = [
+    { id: 'email', label: 'Email', icon: Mail },
+    { id: 'phone', label: 'Phone', icon: Phone },
+  ];
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
       <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
@@ -41,25 +46,28 @@ export default function SignUpCard({
         </p>
       </div>
       <div className="p-8">
-        <div className="flex bg-muted/50 rounded-xl p-1 mb-6">
-          {['email', 'phone'].map((method) => (
+        <div className="flex bg-muted/50 rounded-full p-1 mb-6 relative">
+          {tabs.map((tab) => (
             <button
-              key={method}
-              onClick={() => setAuthMethod(method)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                authMethod === method
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+              key={tab.id}
+              onClick={() => setAuthMethod(tab.id)}
+              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 z-10 ${
+                authMethod === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/80'
               }`}
             >
-              {method === 'email' ? (
-                <Mail className="w-4 h-4" />
-              ) : (
-                <Phone className="w-4 h-4" />
-              )}
-              {method === 'email' ? 'Email' : 'Phone'}
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
             </button>
           ))}
+          <motion.div
+            layoutId="active-auth-method-bubble-signup"
+            className="absolute inset-0 bg-background rounded-full shadow-sm z-0"
+            style={{
+                width: `calc(50% - 4px)`,
+                left: authMethod === 'email' ? '4px' : 'calc(50% + 2px)',
+              }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          />
         </div>
         {authMethod === 'email' ? (
           <form

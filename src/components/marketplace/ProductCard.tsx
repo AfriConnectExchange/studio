@@ -89,18 +89,18 @@ export function ProductCard({
 
           <div className="p-3 flex-1 flex flex-col">
             <h3
-              className="mb-1.5 line-clamp-2 cursor-pointer text-sm font-semibold leading-tight h-[40px]"
+              className="mb-1.5 line-clamp-2 cursor-pointer text-xs sm:text-sm font-semibold leading-tight h-[32px] sm:h-[40px]"
               onClick={() => onNavigate('product', product.id)}
             >
               {product.name}
             </h3>
 
             <div className="flex items-center gap-1.5 mb-2 text-xs text-muted-foreground">
-              <span>{product.seller}</span>
+              <span className="text-[11px] sm:text-xs">{product.seller}</span>
               {product.sellerVerified && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] px-1.5 py-0 h-4 border-green-500/50 bg-green-500/10 text-green-700"
+                  className="text-[9px] sm:text-[10px] px-1 py-0 h-4 border-green-500/50 bg-green-500/10 text-green-700"
                 >
                   Verified
                 </Badge>
@@ -108,11 +108,11 @@ export function ProductCard({
             </div>
 
             <div className="flex items-center gap-1 mb-3">
-              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs font-medium text-foreground">
+              <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-yellow-400 text-yellow-400" />
+              <span className="text-[11px] sm:text-xs font-medium text-foreground">
                 {product.rating}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] sm:text-xs text-muted-foreground">
                 ({product.reviews})
               </span>
             </div>
@@ -120,14 +120,14 @@ export function ProductCard({
             <div className="flex justify-between items-center mt-auto pt-2">
               <div>
                 {product.isFree ? (
-                  <span className="text-lg font-bold text-green-600">Free</span>
+                  <span className="text-base sm:text-lg font-bold text-green-600">Free</span>
                 ) : (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-primary">
+                  <div className="flex items-baseline gap-1 sm:gap-2">
+                    <span className="text-base sm:text-lg font-bold text-primary">
                       {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && (
-                      <span className="text-xs text-muted-foreground line-through">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
                         {formatPrice(product.originalPrice)}
                       </span>
                     )}
@@ -142,12 +142,12 @@ export function ProductCard({
                   handleAddToCart();
                 }}
                 variant={product.isFree ? 'outline' : 'default'}
-                className="rounded-full h-8 w-8"
+                className="rounded-full h-7 w-7 sm:h-8 sm:w-8"
               >
                 {product.isFree ? (
-                  <Heart className="w-4 h-4" />
+                  <Heart className="w-3.5 h-3.5" />
                 ) : (
-                  <ShoppingCart className="w-4 h-4" />
+                  <ShoppingCart className="w-3.5 h-3.5" />
                 )}
               </Button>
             </div>

@@ -7,7 +7,6 @@ import { AnimatedButton } from '../ui/animated-button';
 
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { Button } from '../ui/button';
 import Link from 'next/link';
 
 type Props = any;
@@ -26,36 +25,40 @@ export default function SignInCard({
   onSwitch,
 }: Props) {
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-card rounded-2xl shadow-xl border border-border p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Welcome Back to Africonnect
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Sign in to access your account
-          </p>
+    <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
+      <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-lg">AC</span>
+          </div>
+          <span className="text-2xl font-bold">Africonnect</span>
         </div>
-
-        <div className="flex bg-muted rounded-lg p-1 mb-6">
-          <Button
-            variant={authMethod === 'email' ? 'default' : 'ghost'}
-            className="flex-1"
-            onClick={() => setAuthMethod('email')}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Email
-          </Button>
-          <Button
-            variant={authMethod === 'phone' ? 'default' : 'ghost'}
-            className="flex-1"
-            onClick={() => setAuthMethod('phone')}
-          >
-            <Phone className="mr-2 h-4 w-4" />
-            Phone
-          </Button>
+        <h1 className="text-xl font-semibold mb-2">Welcome Back!</h1>
+        <p className="text-sm text-muted-foreground">
+          Sign in to continue your journey
+        </p>
+      </div>
+      <div className="p-8">
+        <div className="flex bg-muted/50 rounded-xl p-1 mb-6">
+          {['email', 'phone'].map((method) => (
+            <button
+              key={method}
+              onClick={() => setAuthMethod(method)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                authMethod === method
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {method === 'email' ? (
+                <Mail className="w-4 h-4" />
+              ) : (
+                <Phone className="w-4 h-4" />
+              )}
+              {method === 'email' ? 'Email' : 'Phone'}
+            </button>
+          ))}
         </div>
-
         {authMethod === 'email' ? (
           <form
             onSubmit={(e) => {
@@ -71,7 +74,7 @@ export default function SignInCard({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                   className="pl-10"
                   value={formData.email}
                   onChange={(e) =>
@@ -87,7 +90,7 @@ export default function SignInCard({
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData((prev: any) => ({ ...prev, password: e.target.value }))
@@ -149,14 +152,14 @@ export default function SignInCard({
             </AnimatedButton>
           </form>
         )}
-        <div className="mt-6 text-center text-sm space-y-2">
+        <div className="mt-6 text-center space-y-2">
           <Link
             href="/forgot-password"
-            className="text-primary hover:underline"
+            className="text-sm text-primary hover:underline"
           >
             Forgot your password?
           </Link>
-          <p>
+          <div className="text-sm mt-4">
             Don't have an account?{' '}
             <button
               onClick={onSwitch}
@@ -164,7 +167,7 @@ export default function SignInCard({
             >
               Sign up
             </button>
-          </p>
+          </div>
         </div>
       </div>
     </div>

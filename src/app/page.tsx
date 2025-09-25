@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber, User } from 'firebase/auth';
 import CheckEmailCard from '@/components/auth/CheckEmailCard';
 import { doc, DocumentData } from 'firebase/firestore';
+import { PageLoader } from '@/components/ui/loader';
 
 declare global {
   interface Window {
@@ -272,12 +273,7 @@ export default function Home() {
 
   const renderAuthCard = () => {
     if (isUserLoading || (isProfileLoading && user)) {
-      return (
-         <div className="flex flex-col items-center justify-center space-y-4 h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      )
+      return <PageLoader />
     }
 
     switch (authMode) {

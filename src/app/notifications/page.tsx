@@ -5,6 +5,7 @@ import { NotificationsPage } from '@/components/notifications/notifications-page
 import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { PageLoader } from '@/components/ui/loader';
 
 export default function Notifications() {
   const { user, isUserLoading } = useFirebase();
@@ -17,12 +18,7 @@ export default function Notifications() {
   }, [user, isUserLoading, router]);
   
   if (isUserLoading || !user) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

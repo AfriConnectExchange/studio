@@ -119,14 +119,6 @@ export function OnboardingWalkthrough({
     onNavigate(action.page);
   };
   
-  const getModalPosition = () => {
-    return {
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-    };
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -148,8 +140,7 @@ export function OnboardingWalkthrough({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            style={getModalPosition()}
-            className="fixed z-[101]"
+            className="fixed inset-0 z-[101] flex items-center justify-center p-4"
           >
             <Card className="w-80 sm:w-96 max-w-[calc(100vw-2rem)] shadow-2xl border-2">
               <CardContent className="p-0">

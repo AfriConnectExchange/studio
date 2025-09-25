@@ -128,7 +128,7 @@ export default function MarketplacePage() {
       seller: 'Accra Crafts',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'clothing',
       featured: true,
       discount: 14,
@@ -146,7 +146,7 @@ export default function MarketplacePage() {
       seller: 'Lagos Artisans',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       location: 'Nigeria',
       condition: 'new',
@@ -162,7 +162,7 @@ export default function MarketplacePage() {
       seller: 'Ankara Fashion',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'clothing',
       location: 'Kenya',
       condition: 'new',
@@ -178,7 +178,7 @@ export default function MarketplacePage() {
       seller: 'Natural Beauty Co',
       sellerVerified: false,
       image:
-        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaGVhJTIwYnV0dGVyfGVufDF8fHx8MTc1ODEyMTQ5MHww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaGVhJTIwYnV0dGVyfGVufDF8fHx8MTc1ODEyMTQ5MHww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'beauty',
       isFree: true,
       isGifterListing: true,
@@ -195,7 +195,7 @@ export default function MarketplacePage() {
       seller: 'Beads & Beyond',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXdlbHJ5fGVufDF8fHx8MTc1ODEyMTQ5NXww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXdlbHJ5fGVufDF8fHx8MTc1ODEyMTQ5NXww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       location: 'South Africa',
       condition: 'new',
@@ -211,7 +211,7 @@ export default function MarketplacePage() {
       seller: 'Basket Weavers Co',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXNrZXR8ZW58MXx8fHwxNzU4MTIxNTAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXNrZXR8ZW58MXx8fHwxNzU4MTIxNTAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'home',
       isFree: true,
       isGifterListing: true,
@@ -228,7 +228,7 @@ export default function MarketplacePage() {
       seller: 'Heritage Textiles',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYWJyaWN8ZW58MXx8fHwxNzU4MTIxNTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYWJyaWN8ZW58MXx8fHwxNzU4MTIxNTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       isFree: true,
       isGifterListing: true,
@@ -446,16 +446,58 @@ export default function MarketplacePage() {
         {/* Main Content */}
         <div className="lg:col-span-3">
           {/* Mobile Search and Filters */}
-          <div className="lg:hidden px-4 mb-4">
+          <div className="lg:hidden px-4 mb-4 flex gap-2">
             <SearchBar
               value={filters.searchQuery}
               onChange={(value) => handleFiltersChange({ searchQuery: value })}
               onSearch={handleSearch}
+              className="flex-grow"
             />
-            {searchError && (
-              <p className="text-xs text-destructive mt-1">{searchError}</p>
-            )}
+             <Sheet
+              open={mobileFiltersOpen}
+              onOpenChange={setMobileFiltersOpen}
+            >
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 h-10 w-10"
+                >
+                  <SlidersHorizontal className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="bottom"
+                className="w-full rounded-t-2xl max-h-[85vh] flex flex-col p-0"
+              >
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>Filters</SheetTitle>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <FilterPanel
+                    categories={categories}
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                    onSearch={handleSearch}
+                    onClearAllFilters={handleClearAllFilters}
+                    currency="£"
+                  />
+                </div>
+                <div className="p-4 border-t bg-background">
+                  <Button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="w-full"
+                  >
+                    View {sortedProducts.length} Results
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
+            {searchError && (
+              <p className="text-xs text-destructive mt-1 px-4 lg:px-0">{searchError}</p>
+            )}
+
 
           {/* Results Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 px-4 sm:px-0">
@@ -493,49 +535,6 @@ export default function MarketplacePage() {
             />
           </div>
 
-          {/* Sticky Filters Button (Mobile) */}
-          <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
-            <Sheet
-              open={mobileFiltersOpen}
-              onOpenChange={setMobileFiltersOpen}
-            >
-              <SheetTrigger asChild>
-                <Button
-                  variant="default"
-                  className="rounded-full shadow-lg h-12 px-6"
-                >
-                  <SlidersHorizontal className="w-5 h-5 mr-2" />
-                  Filters & Sort
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="bottom"
-                className="w-full rounded-t-2xl max-h-[85vh] flex flex-col"
-              >
-                <SheetHeader className="p-4 border-b">
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="flex-1 overflow-y-auto p-4">
-                  <FilterPanel
-                    categories={categories}
-                    filters={filters}
-                    onFiltersChange={handleFiltersChange}
-                    onSearch={handleSearch}
-                    onClearAllFilters={handleClearAllFilters}
-                    currency="£"
-                  />
-                </div>
-                <div className="p-4 border-t">
-                  <Button
-                    onClick={() => setMobileFiltersOpen(false)}
-                    className="w-full"
-                  >
-                    View {sortedProducts.length} Results
-                  </Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
         </div>
       </div>
     </div>

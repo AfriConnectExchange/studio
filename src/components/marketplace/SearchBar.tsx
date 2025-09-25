@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -20,54 +20,26 @@ export function SearchBar({
   placeholder = 'Search products or sellers...',
   className = '',
 }: SearchBarProps) {
-  const [error, setError] = useState<string>('');
-
-  const handleSearch = () => {
-    // US014-AC03 - Invalid Search Input validation
-    if (value.length > 0 && value.length < 3) {
-      setError('Please enter at least 3 letters or numbers.');
-      return;
-    }
-
-    // Check if input contains at least 3 alphanumeric characters
-    const alphanumericCount = value.replace(/[^a-zA-Z0-9]/g, '').length;
-    if (value.length > 0 && alphanumericCount < 3) {
-      setError('Please enter at least 3 letters or numbers.');
-      return;
-    }
-
-    setError('');
-    onSearch(value);
-  };
 
   const handleInputChange = (newValue: string) => {
     onChange(newValue);
-
-    // Clear error when user starts typing a valid query
-    if (
-      newValue.length >= 3 &&
-      newValue.replace(/[^a-zA-Z0-9]/g, '').length >= 3
-    ) {
-      setError('');
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleSearch();
+      onSearch(value);
     }
   };
 
   const clearSearch = () => {
     onChange('');
     onSearch('');
-    setError('');
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <Label htmlFor="product-search" className="block text-sm font-medium">
+    <div className={className}>
+      <Label htmlFor="product-search" className="sr-only">
         Search Products
       </Label>
       <div className="relative">
@@ -79,31 +51,20 @@ export function SearchBar({
           value={value}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyPress={handleKeyPress}
-          className={`pl-10 pr-20 ${error ? 'border-destructive' : ''}`}
+          className={'pl-10 pr-4 h-10'}
         />
-        <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-          {value && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={clearSearch}
-              className="h-7 w-7 p-0"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          )}
+        {value && (
           <Button
             type="button"
-            size="sm"
-            onClick={handleSearch}
-            className="h-7 px-2 text-xs"
+            variant="ghost"
+            size="icon"
+            onClick={clearSearch}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
           >
-            Search
+            <X className="w-4 h-4" />
           </Button>
-        </div>
+        )}
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

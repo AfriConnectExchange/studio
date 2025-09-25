@@ -198,8 +198,8 @@ export function KycFlow({ onNavigate }: KYCPageProps) {
           Back to Profile
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">KYC Verification</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl font-bold">KYC Verification</h1>
+          <p className="text-sm text-muted-foreground">
             Complete your seller verification to start trading
           </p>
         </div>

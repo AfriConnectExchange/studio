@@ -1,5 +1,5 @@
 'use client';
-import { Star, Heart, ShoppingCart } from 'lucide-react';
+import { Star, Heart, ShoppingCart, Gift } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -25,7 +25,6 @@ export function ProductCard({
   animationDelay = 0,
   currency = '£',
 }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const formatPrice = (price: number) => `${currency}${price.toLocaleString()}`;
 
@@ -36,11 +35,6 @@ export function ProductCard({
       return;
     }
     onAddToCart(product);
-  };
-
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
   };
 
   return (
@@ -79,17 +73,6 @@ export function ProductCard({
                 </Badge>
               )}
             </div>
-
-            <motion.div whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm hover:bg-background w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={handleWishlistClick}
-              >
-                <Heart className={cn("w-4 h-4 text-foreground/70", isWishlisted && "fill-red-500 text-red-500")} />
-              </Button>
-            </motion.div>
           </div>
 
           <div className="p-3 flex-1 flex flex-col">
@@ -147,7 +130,7 @@ export function ProductCard({
                   className="rounded-full h-7 w-7 sm:h-8 sm:w-8"
                 >
                   {product.isFree ? (
-                    <Heart className="w-3.5 h-3.5" />
+                    <Gift className="w-3.5 h-3.5" />
                   ) : (
                     <ShoppingCart className="w-3.5 h-3.5" />
                   )}

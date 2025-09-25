@@ -31,7 +31,7 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
     sold: 89,
     description: "This authentic Kente cloth is hand-woven by skilled artisans in Kumasi, Ghana. Each piece tells a story through its intricate patterns and vibrant colors. Made from high-quality cotton and silk blend, this traditional textile is perfect for special occasions, cultural celebrations, or as a stunning decorative piece.",
     images: [
-      "https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080",
       "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080"
     ],
@@ -326,18 +326,22 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
             </TabsContent>
             
             <TabsContent value="shipping" className="space-y-4 pt-4">
-              <Card>
+               <Card>
                 <CardHeader>
                   <CardTitle className="text-base sm:text-lg">Shipping Options</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm">
-                  <div className="space-y-4">
+                <CardContent className="text-sm space-y-4">
+                  <div className="flex items-start gap-4 p-4 border rounded-lg bg-accent/50">
+                    <Truck className="w-5 h-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium mb-1">Domestic Shipping</h4>
+                      <h4 className="font-medium">Domestic Shipping</h4>
                       <p className="text-muted-foreground">{product.shipping.domestic}</p>
                     </div>
+                  </div>
+                   <div className="flex items-start gap-4 p-4 border rounded-lg bg-accent/50">
+                    <Ship className="w-5 h-5 text-primary mt-1" />
                     <div>
-                      <h4 className="font-medium mb-1">International Shipping</h4>
+                      <h4 className="font-medium">International Shipping</h4>
                       <p className="text-muted-foreground">{product.shipping.international}</p>
                     </div>
                   </div>

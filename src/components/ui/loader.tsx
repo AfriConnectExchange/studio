@@ -29,7 +29,7 @@ export function PageLoader() {
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
        <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
                     <span className="text-white font-bold text-base">AC</span>
                 </div>

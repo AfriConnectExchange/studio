@@ -18,6 +18,7 @@ import { doc, DocumentData } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { OnboardingWalkthrough } from '@/components/onboarding/onboarding-walkthrough';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { user, firestore } = useFirebase();
@@ -45,10 +46,8 @@ export default function DashboardPage() {
   };
   
   const handleWalkthroughClose = () => {
-    // If the user skips, we still mark it as complete so it doesn't show again.
-    if (userDocRef && userProfile && !userProfile.walkthroughCompleted) {
-      updateDocumentNonBlocking(userDocRef, { walkthroughCompleted: true });
-    }
+    // When skipping or closing, we just hide the modal without updating the DB flag.
+    // This allows it to be re-triggered or tested again.
     setShowWalkthrough(false);
   };
 
@@ -132,6 +131,13 @@ export default function DashboardPage() {
               This is a placeholder for your main application content after
               successful authentication.
             </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => setShowWalkthrough(true)}
+            >
+              Test Walkthrough
+            </Button>
           </div>
         </main>
       </div>

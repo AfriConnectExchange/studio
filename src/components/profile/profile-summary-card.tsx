@@ -12,19 +12,22 @@ import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { ConfirmationModal } from '@/components/ui/confirmation-modal';
+import { cn } from '@/lib/utils';
+
 
 interface ProfileSummaryCardProps {
   user: FirebaseUser;
   onNavigate: (page: string) => void;
+  activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
 const getRoleColor = (role?: string) => {
   switch (role) {
-    case 'seller': return 'bg-blue-100 text-blue-800';
-    case 'sme': return 'bg-purple-100 text-purple-800';
-    case 'trainer': return 'bg-green-100 text-green-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'seller': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    case 'sme': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+    case 'trainer': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
 };
 
@@ -37,7 +40,7 @@ const getRoleLabel = (role?: string) => {
   }
 };
 
-export function ProfileSummaryCard({ user, onNavigate, setActiveTab }: ProfileSummaryCardProps) {
+export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }: ProfileSummaryCardProps) {
   const { auth, firestore } = useFirebase();
   const { toast } = useToast();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -67,22 +70,28 @@ export function ProfileSummaryCard({ user, onNavigate, setActiveTab }: ProfileSu
   const userRole = userProfile?.roleIds?.[0] || 'buyer';
   const userName = userProfile?.firstName || userProfile?.lastName ? `${userProfile.firstName} ${userProfile.lastName}` : user.displayName || 'Unnamed User';
   
+  const menuItems = [
+    { id: 'profile', label: 'Edit Profile', icon: User },
+    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'transactions', label: 'Transaction History', icon: Receipt },
+  ];
+
   return (
     <>
       <Card>
         <CardContent className="pt-6">
           <div className="text-center">
-            <Avatar className="w-20 h-20 mx-auto mb-4">
-              <AvatarImage src={user.photoURL || undefined} />
-              <AvatarFallback className="text-2xl">
+            <Avatar className="w-20 h-20 mx-auto mb-4 border-2 border-primary/20 p-1">
+              <AvatarImage src={user.photoURL || undefined} alt={userName} />
+              <AvatarFallback className="text-2xl bg-muted">
                 {userName.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
               </AvatarFallback>
             </Avatar>
             <h3 className="font-semibold text-lg mb-1">{userName}</h3>
-            <Badge className={`mb-3 ${getRoleColor(userRole)}`}>
+            <Badge className={cn('mb-3', getRoleColor(userRole))}>
               {getRoleLabel(userRole)}
             </Badge>
-            <div className="text-sm text-muted-foreground space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1 my-4">
               {user.email && (
                 <div className="flex items-center justify-center gap-2">
                   <Mail className="w-4 h-4" />
@@ -96,8 +105,8 @@ export function ProfileSummaryCard({ user, onNavigate, setActiveTab }: ProfileSu
                 </div>
               )}
               {userProfile?.address && (
-                <div className="flex items-center justify-center gap-2">
-                  <MapPin className="w-4 h-4" />
+                <div className="flex items-center justify-center gap-2 text-center">
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>{userProfile.address}</span>
                 </div>
               )}
@@ -112,38 +121,23 @@ export function ProfileSummaryCard({ user, onNavigate, setActiveTab }: ProfileSu
               </div>
             )}
 
-            <div className="mt-4 space-y-2">
+            <div className="mt-6 space-y-2">
+              {menuItems.map(item => (
+                 <Button
+                  key={item.id}
+                  variant={activeTab === item.id ? 'default' : 'ghost'}
+                  size="sm"
+                  className="w-full justify-start text-left"
+                  onClick={() => item.id === 'transactions' ? onNavigate('/transactions') : setActiveTab(item.id)}
+                >
+                  <item.icon className="w-4 h-4 mr-2" />
+                  {item.label}
+                </Button>
+              ))}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="w-full justify-start"
-                onClick={() => setActiveTab('profile')}
-              >
-                <User className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => setActiveTab('settings')}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-               <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-start"
-                    onClick={() => onNavigate('/transactions')} // Assuming a transactions page
-                  >
-                    <Receipt className="w-4 h-4 mr-2" />
-                    Transaction History
-                  </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
+                className="w-full justify-start text-left text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => setShowLogoutConfirm(true)}
               >
                 <LogOut className="w-4 h-4 mr-2" />

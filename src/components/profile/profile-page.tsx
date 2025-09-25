@@ -65,7 +65,7 @@ export function ProfilePage() {
         )}
 
         {success && (
-          <Alert className="mb-6 bg-green-100 border-green-300 text-green-800 [&>svg]:text-green-800">
+          <Alert className="mb-6 bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400 [&>svg]:text-green-500">
              <AlertCircle className="h-4 w-4" />
             <AlertDescription>{success}</AlertDescription>
           </Alert>
@@ -76,6 +76,7 @@ export function ProfilePage() {
              <ProfileSummaryCard 
                 user={user} 
                 onNavigate={router.push} 
+                activeTab={activeTab}
                 setActiveTab={setActiveTab}
              />
           </div>

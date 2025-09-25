@@ -97,7 +97,7 @@ export function PersonalDetailsStep({ onNext, onBack, onUpdate, defaultValues }:
                         id="phone"
                         placeholder="Enter phone number"
                         international
-                        defaultCountry="NG"
+                        defaultCountry="GB"
                         {...field}
                       />
                   </FormControl>
@@ -114,7 +114,7 @@ export function PersonalDetailsStep({ onNext, onBack, onUpdate, defaultValues }:
                   <FormLabel>Address (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="123 Main St, Anytown, Nigeria"
+                      placeholder="123 Main St, London, UK"
                       {...field}
                     />
                   </FormControl>

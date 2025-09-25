@@ -13,7 +13,7 @@ interface RoleSelectionStepProps {
 }
 
 const roles = [
-  { id: 'buyer', name: 'Buyer', description: 'Find and purchase products from across Africa.', icon: ShoppingBag },
+  { id: 'buyer', name: 'Buyer', description: 'Find and purchase products.', icon: ShoppingBag },
   { id: 'seller', name: 'Seller', description: 'Sell your products on our marketplace.', icon: Briefcase },
   { id: 'sme', name: 'SME', description: 'Grow your small or medium enterprise.', icon: Lightbulb },
   { id: 'trainer', name: 'Trainer', description: 'Offer training and expertise to others.', icon: School },
@@ -30,7 +30,7 @@ export function RoleSelectionStep({ onNext, onBack, onUpdate, currentValue }: Ro
     return (
         <div className="text-center">
         <h2 className="text-2xl font-semibold mb-2">Choose Your Primary Role</h2>
-        <p className="text-muted-foreground mb-8">What brings you to Africonnect? You can change this later.</p>
+        <p className="text-muted-foreground mb-8">What brings you to Africonnectexchange? You can change this later.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             {roles.map((role) => (

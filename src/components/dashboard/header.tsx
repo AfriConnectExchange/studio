@@ -70,7 +70,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              Lagos, Nigeria
+              London, UK
             </span>
           </div>
           <div className="text-sm text-muted-foreground">
@@ -101,10 +101,10 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                     onClick={handleMobileLinkClick}
                   >
                     <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold">AC</span>
+                      <span className="text-white font-bold">AE</span>
                     </div>
                     <span className="text-xl font-bold text-primary">
-                      AfriConnect
+                      Africonnectexchange
                     </span>
                   </Link>
                 </div>
@@ -179,10 +179,10 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           <div className="flex items-center gap-2 cursor-pointer flex-1 lg:flex-none justify-center lg:justify-start min-w-0">
             <Link href="/marketplace" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-base">AC</span>
+                <span className="text-white font-bold text-base">AE</span>
               </div>
               <span className="text-lg lg:text-xl font-bold text-primary truncate">
-                AfriConnect
+                Africonnectexchange
               </span>
             </Link>
           </div>
@@ -192,7 +192,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search products, courses, services..."
+                placeholder="Search products, services..."
                 className="pl-10 pr-4 h-10"
               />
             </div>

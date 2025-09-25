@@ -71,7 +71,7 @@ export function OnboardingFlow() {
     <div className="bg-card rounded-2xl shadow-xl border p-4 sm:p-8 w-full">
       <div className="flex items-center justify-center gap-2 mb-4">
         <Logo withText={false} />
-        <h1 className="text-2xl font-bold">Africonnect</h1>
+        <h1 className="text-2xl font-bold">Africonnectexchange</h1>
       </div>
       <Progress value={progressValue} className="mb-8" />
       <div className="min-h-[400px] flex flex-col justify-center">

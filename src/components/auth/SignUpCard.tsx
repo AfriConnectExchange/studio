@@ -36,13 +36,13 @@ export default function SignUpCard({
       <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
         <div className="flex items-center justify-center gap-2 mb-4">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">AC</span>
+            <span className="text-primary-foreground font-bold text-lg">AE</span>
           </div>
-          <span className="text-2xl font-bold">Africonnect</span>
+          <span className="text-2xl font-bold">Africonnectexchange</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Join Africonnect</h1>
+        <h1 className="text-xl font-semibold mb-2">Join Africonnectexchange</h1>
         <p className="text-sm text-muted-foreground">
-          Connect, trade, and thrive across Africa
+          Connect, trade, and thrive
         </p>
       </div>
       <div className="p-8">
@@ -222,7 +222,7 @@ export default function SignUpCard({
                 onChange={(value) =>
                   setFormData((prev: any) => ({ ...prev, phone: value || '' }))
                 }
-                defaultCountry="NG"
+                defaultCountry="GB"
                 international
               />
             </div>

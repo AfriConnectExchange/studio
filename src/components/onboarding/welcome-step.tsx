@@ -14,7 +14,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
           <PartyPopper className="w-10 h-10 text-primary" />
         </div>
       </div>
-      <h2 className="text-3xl font-bold mb-4">Welcome to Africonnect!</h2>
+      <h2 className="text-3xl font-bold mb-4">Welcome to Africonnectexchange!</h2>
       <p className="text-muted-foreground mb-8 max-w-md mx-auto">
         Your account has been created. Let's get your profile set up so you can start connecting and trading.
       </p>

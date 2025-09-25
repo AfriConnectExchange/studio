@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Africonnect',
-  description: 'Connecting Africa, one exchange at a time.',
+  title: 'Africonnectexchange',
+  description: 'Connecting the diaspora, one exchange at a time.',
 };
 
 export default function RootLayout({

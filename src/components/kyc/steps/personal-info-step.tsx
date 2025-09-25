@@ -52,6 +52,7 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
                     <SelectValue placeholder="Select nationality" />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="gb">🇬🇧 British</SelectItem>
                     <SelectItem value="ng">🇳🇬 Nigerian</SelectItem>
                     <SelectItem value="gh">🇬🇭 Ghanaian</SelectItem>
                     <SelectItem value="ke">🇰🇪 Kenyan</SelectItem>
@@ -68,10 +69,9 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
                     <SelectValue placeholder="Select ID type" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="national_id">National ID</SelectItem>
                     <SelectItem value="passport">Passport</SelectItem>
                     <SelectItem value="drivers_license">Driver's License</SelectItem>
-                    <SelectItem value="voters_card">Voter's Card</SelectItem>
+                    <SelectItem value="national_id">National ID</SelectItem>
                 </SelectContent>
                 </Select>
             </div>
@@ -111,12 +111,12 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="state">State/Province</Label>
+                <Label htmlFor="state">County</Label>
                 <Input
                 id="state"
                 value={kycData.state}
                 onChange={(e) => onInputChange('state', e.target.value)}
-                placeholder="State"
+                placeholder="County"
                 />
             </div>
             <div className="space-y-2">
@@ -137,7 +137,7 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
                     value={kycData.primaryPhone}
                     onChange={(value) => onInputChange('primaryPhone', value || '')}
                     placeholder="Enter your phone number"
-                    defaultCountry="NG"
+                    defaultCountry="GB"
                     international
                     required
                 />

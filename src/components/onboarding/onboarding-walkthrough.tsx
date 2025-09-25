@@ -45,7 +45,7 @@ const walkthroughSteps: WalkthroughStep[] = [
     title: 'Track Your Performance',
     description: 'Get a quick overview of your total revenue and other key metrics right from your dashboard.',
     icon: Search,
-    position: 'top',
+    position: 'bottom',
     highlight: {
       element: '[data-tour="revenue"]',
     }
@@ -55,14 +55,13 @@ const walkthroughSteps: WalkthroughStep[] = [
     title: 'Manage Your Profile',
     description: 'Complete your profile to access all features. Sellers need KYC verification to start selling.',
     icon: User,
-    position: 'top',
+    position: 'bottom',
     action: {
       label: 'Complete Profile',
       page: 'profile'
     },
     highlight: {
       element: '[data-tour="profile"]',
-      offset: { x: -120, y: 60 }
     }
   },
     {
@@ -70,7 +69,7 @@ const walkthroughSteps: WalkthroughStep[] = [
     title: 'Stay Updated',
     description: 'Get notified about order updates, new products, and special offers from your favorite sellers.',
     icon: Bell,
-    position: 'top',
+    position: 'bottom',
     highlight: {
       element: '[data-tour="notifications"]',
     }
@@ -147,7 +146,7 @@ export function OnboardingWalkthrough({
   const handleSkip = () => {
     setIsVisible(false);
     setTimeout(() => {
-      onComplete();
+      onClose();
     }, 300);
   };
 

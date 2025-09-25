@@ -46,9 +46,9 @@ export function ArticleList({
                 Clear Search
               </Button>
             )}
-            <AnimatedButton onClick={() => onNavigate('support')}>
+            <Button onClick={() => onNavigate('support')}>
               Contact Support
-            </AnimatedButton>
+            </Button>
           </div>
         </CardContent>
       </Card>

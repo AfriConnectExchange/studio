@@ -45,7 +45,6 @@ export function Header({ cartCount = 0 }: HeaderProps) {
 
   const navigationItems = [
     { id: '/marketplace', label: 'Marketplace', href: '/marketplace' },
-    { id: '/courses', label: 'Courses', href: '/courses' },
     { id: '/money-transfer', label: 'Send Money', href: '/money-transfer' },
     { id: '/adverts', label: 'My Adverts', icon: TrendingUp, href: '/adverts' },
   ];

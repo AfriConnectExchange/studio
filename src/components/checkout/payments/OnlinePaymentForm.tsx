@@ -44,7 +44,7 @@ export function OnlinePaymentForm({ orderTotal, paymentType, onConfirm, onCancel
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const walletProviders = [
-    { id: 'paypal', name: 'PayPal', icon: <Image src="/paypal.svg" alt="PayPal" width={60} height={20} /> },
+    { id: 'paypal', name: 'PayPal', icon: <Image src="/paypal-logo.svg" alt="PayPal" width={60} height={20} /> },
     { id: 'applepay', name: 'Apple Pay', icon: <Image src="/apple-pay.svg" alt="Apple Pay" width={50} height={20} /> },
     { id: 'googlepay', name: 'Google Pay', icon: <Image src="/google-pay.svg" alt="Google Pay" width={50} height={20} /> }
   ];

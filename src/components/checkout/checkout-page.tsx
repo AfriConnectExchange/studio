@@ -13,6 +13,7 @@ import { PaymentConfirmation } from '@/components/checkout/payments/PaymentConfi
 import { ArrowLeft, ShoppingCart, MapPin, Truck } from 'lucide-react';
 import { PaymentConfirmation as PaymentConfirmationModal } from '@/components/ui/confirmation-modal';
 import type { CartItem } from '@/components/cart/cart-page';
+import Image from 'next/image';
 
 interface CheckoutPageProps {
   cartItems: CartItem[];

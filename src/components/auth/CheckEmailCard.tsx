@@ -7,9 +7,10 @@ import { AnimatedButton } from '../ui/animated-button';
 interface CheckEmailCardProps {
   email: string;
   onBack: () => void;
+  isVerifying: boolean;
 }
 
-export default function CheckEmailCard({ email, onBack }: CheckEmailCardProps) {
+export default function CheckEmailCard({ email, onBack, isVerifying }: CheckEmailCardProps) {
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden w-full max-w-md">
       <div className="p-8 sm:p-10 text-center">
@@ -24,14 +25,24 @@ export default function CheckEmailCard({ email, onBack }: CheckEmailCardProps) {
           <span className="font-semibold text-foreground">{email}</span>. Please
           check your inbox and follow the link to activate your account.
         </p>
-        <p className="text-xs text-muted-foreground mb-6">
-          This page will automatically redirect after you verify your email.
-        </p>
+
+        {isVerifying ? (
+           <div className="flex flex-col items-center justify-center space-y-4 my-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              <p className="text-muted-foreground text-sm">Waiting for verification...</p>
+           </div>
+        ) : (
+            <p className="text-xs text-muted-foreground mb-6">
+            This page will automatically redirect after you verify your email.
+            </p>
+        )}
+        
         <AnimatedButton
           onClick={onBack}
           size="lg"
           className="w-full"
           variant="outline"
+          disabled={isVerifying}
         >
           Back to Sign In
         </AnimatedButton>

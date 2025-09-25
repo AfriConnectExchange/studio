@@ -37,6 +37,7 @@ export default function Home() {
   const { toast } = useToast();
   const { auth, user, isUserLoading, firestore } = useFirebase();
   const router = useRouter();
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<DocumentData>(userDocRef);
@@ -79,23 +80,26 @@ export default function Home() {
     let intervalId: NodeJS.Timeout;
 
     if (user && !user.emailVerified && authMode === 'check-email') {
+      setIsVerifying(true);
       intervalId = setInterval(async () => {
         await user.reload();
         const freshUser = auth.currentUser;
         if (freshUser?.emailVerified) {
           clearInterval(intervalId);
+          setIsVerifying(false);
           toast({
             title: 'Email Verified!',
             description: 'Redirecting to complete your profile...',
           });
           // The main useEffect will handle the redirection.
         }
-      }, 5000); // Check every 5 seconds
+      }, 3000); // Check every 3 seconds
     }
 
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
+        setIsVerifying(false);
       }
     };
   }, [user, auth, authMode, toast]);
@@ -319,6 +323,7 @@ export default function Home() {
           <CheckEmailCard
             email={formData.email}
             onBack={handleBackToSignIn}
+            isVerifying={isVerifying}
           />
         );
       default:

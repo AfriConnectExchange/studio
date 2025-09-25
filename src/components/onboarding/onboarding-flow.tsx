@@ -41,9 +41,10 @@ export function OnboardingFlow() {
     try {
         const userRef = doc(firestore, 'users', user.uid);
         const finalUserData = {
-            ...userData,
-            firstName: userData.firstName || user.displayName?.split(' ')[0],
-            lastName: userData.lastName || user.displayName?.split(' ').slice(1).join(' '),
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            phoneNumber: userData.phoneNumber,
+            address: userData.address,
             onboardingCompleted: true,
             roleIds: [userData.role]
         }

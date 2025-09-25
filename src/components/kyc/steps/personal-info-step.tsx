@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { KYCData } from "../kyc-flow";
+import PhoneInput from 'react-phone-number-input';
 
 interface PersonalInfoStepProps {
     kycData: KYCData;
@@ -51,11 +52,11 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
                     <SelectValue placeholder="Select nationality" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="ng">Nigerian</SelectItem>
-                    <SelectItem value="gh">Ghanaian</SelectItem>
-                    <SelectItem value="ke">Kenyan</SelectItem>
-                    <SelectItem value="za">South African</SelectItem>
-                    <SelectItem value="eg">Egyptian</SelectItem>
+                    <SelectItem value="ng">🇳🇬 Nigerian</SelectItem>
+                    <SelectItem value="gh">🇬🇭 Ghanaian</SelectItem>
+                    <SelectItem value="ke">🇰🇪 Kenyan</SelectItem>
+                    <SelectItem value="za">🇿🇦 South African</SelectItem>
+                    <SelectItem value="eg">🇪🇬 Egyptian</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
                 </Select>
@@ -130,15 +131,16 @@ export function PersonalInfoStep({ kycData, onInputChange }: PersonalInfoStepPro
             </div>
 
             <div className="space-y-2">
-            <Label htmlFor="primaryPhone">Primary Phone Number *</Label>
-            <Input
-                id="primaryPhone"
-                type="tel"
-                value={kycData.primaryPhone}
-                onChange={(e) => onInputChange('primaryPhone', e.target.value)}
-                placeholder="Enter your phone number"
-                required
-            />
+                <Label htmlFor="primaryPhone">Primary Phone Number *</Label>
+                <PhoneInput
+                    id="primaryPhone"
+                    value={kycData.primaryPhone}
+                    onChange={(value) => onInputChange('primaryPhone', value || '')}
+                    placeholder="Enter your phone number"
+                    defaultCountry="NG"
+                    international
+                    required
+                />
             </div>
         </CardContent>
         </Card>

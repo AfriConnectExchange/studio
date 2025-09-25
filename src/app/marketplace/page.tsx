@@ -403,7 +403,7 @@ export default function MarketplacePage() {
       <div className="grid lg:grid-cols-4 gap-6 md:gap-8">
         {/* Desktop Filters Sidebar */}
         <div className="hidden lg:block lg:col-span-1">
-          <div className="sticky top-6">
+          <div className="sticky top-24">
             <FilterPanel
               categories={categories}
               filters={filters}

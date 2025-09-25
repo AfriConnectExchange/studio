@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { FreeListingBadge } from './ListingBadges';
 import { motion } from 'framer-motion';
 import type { Product } from '@/app/marketplace/page';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -23,18 +25,22 @@ export function ProductCard({
   animationDelay = 0,
   currency = '£',
 }: ProductCardProps) {
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
   const formatPrice = (price: number) => `${currency}${price.toLocaleString()}`;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (product.isFree) {
       onNavigate('product', product.id);
       return;
     }
+    onAddToCart(product);
+  };
 
-    onAddToCart({
-      ...product,
-      quantity: 1,
-    });
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsWishlisted(!isWishlisted);
   };
 
   return (
@@ -44,7 +50,7 @@ export function ProductCard({
       transition={{ duration: 0.3, delay: animationDelay }}
       className="h-full"
     >
-      <Card className="group border-border/60 hover:shadow-lg transition-all duration-300 h-full flex flex-col overflow-hidden">
+      <Card className="group border-border/60 hover:shadow-lg transition-all duration-300 h-full flex flex-col overflow-hidden rounded-2xl">
         <CardContent className="p-0 flex-1 flex flex-col">
           <div className="relative overflow-hidden">
             <div
@@ -74,17 +80,16 @@ export function ProductCard({
               )}
             </div>
 
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm hover:bg-background w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation();
-                /* Handle wishlist */
-              }}
-            >
-              <Heart className="w-4 h-4 text-foreground/70" />
-            </Button>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm hover:bg-background w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={handleWishlistClick}
+              >
+                <Heart className={cn("w-4 h-4 text-foreground/70", isWishlisted && "fill-red-500 text-red-500")} />
+              </Button>
+            </motion.div>
           </div>
 
           <div className="p-3 flex-1 flex flex-col">
@@ -134,22 +139,20 @@ export function ProductCard({
                   </div>
                 )}
               </div>
-
-              <Button
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart();
-                }}
-                variant={product.isFree ? 'outline' : 'default'}
-                className="rounded-full h-7 w-7 sm:h-8 sm:w-8"
-              >
-                {product.isFree ? (
-                  <Heart className="w-3.5 h-3.5" />
-                ) : (
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                )}
-              </Button>
+              <motion.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  size="icon"
+                  onClick={handleAddToCart}
+                  variant={product.isFree ? 'outline' : 'default'}
+                  className="rounded-full h-7 w-7 sm:h-8 sm:w-8"
+                >
+                  {product.isFree ? (
+                    <Heart className="w-3.5 h-3.5" />
+                  ) : (
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              </motion.div>
             </div>
           </div>
         </CardContent>

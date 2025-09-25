@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   ShoppingCart,
@@ -19,14 +19,26 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useFirebase } from '@/firebase';
+import { motion } from 'framer-motion';
 
-export function Header() {
+interface HeaderProps {
+    cartCount?: number;
+}
+
+export function Header({ cartCount = 0 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useFirebase();
   const pathname = usePathname();
+  const [isCartAnimating, setIsCartAnimating] = useState(false);
 
-  // Will be implemented later
-  const cartCount = 0; 
+  useEffect(() => {
+    if (cartCount > 0) {
+      setIsCartAnimating(true);
+      const timer = setTimeout(() => setIsCartAnimating(false), 500); // Animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [cartCount]);
+
   const notificationCount = 2;
 
   const navigationItems = [
@@ -203,19 +215,24 @@ export function Header() {
             {user && (
               <div className="hidden md:flex items-center gap-2">
                 <Link href="/cart" passHref>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-9 w-9"
-                    aria-label={`Shopping cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
+                  <motion.div
+                    animate={isCartAnimating ? { scale: [1, 1.2, 1], rotate: [0, -10, 10, 0] } : {}}
+                    transition={{ duration: 0.5 }}
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative h-9 w-9"
+                      aria-label={`Shopping cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </Button>
+                  </motion.div>
                 </Link>
                 <Link href="/notifications" passHref>
                   <Button
@@ -241,18 +258,23 @@ export function Header() {
             
             <div className="flex md:hidden items-center gap-1">
                 <Link href="/cart" passHref>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="relative h-9 w-9"
+                  <motion.div
+                      animate={isCartAnimating ? { scale: [1, 1.2, 1], rotate: [0, -10, 10, 0] } : {}}
+                      transition={{ duration: 0.5 }}
                   >
-                    <ShoppingCart className="w-4 h-4" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                        {cartCount > 9 ? '9+' : cartCount}
-                      </span>
-                    )}
-                  </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="relative h-9 w-9"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {cartCount > 9 ? '9+' : cartCount}
+                        </span>
+                      )}
+                    </Button>
+                  </motion.div>
               </Link>
             </div>
           </div>

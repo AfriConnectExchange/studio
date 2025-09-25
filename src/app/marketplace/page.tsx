@@ -22,6 +22,8 @@ import { SearchBar } from '@/components/marketplace/SearchBar';
 import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/dashboard/header';
+import { useToast } from '@/hooks/use-toast';
+import type { CartItem } from '@/components/cart/cart-page';
 
 export interface Product {
   id: number;
@@ -58,12 +60,23 @@ export interface FilterState {
 export default function MarketplacePage() {
   const { user } = useFirebase();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchError, setSearchError] = useState('');
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    // In a real app, you'd fetch the cart from a global state or API
+    // For now, we just calculate the count from local state
+    const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+    setCartCount(count);
+  }, [cart]);
+
 
   const onNavigate = (page: string, productId?: number) => {
     if (page === 'product' && productId) {
@@ -73,9 +86,24 @@ export default function MarketplacePage() {
     }
   };
 
-  const onAddToCart = (product: any) => {
-    // Implement add to cart logic, e.g., using a global state or context
-    console.log('Added to cart:', product);
+  const onAddToCart = (product: Product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: 1, inStock: true, shippingCost: 5.99 }]; // Add default values
+      }
+    });
+
+    toast({
+        title: "Added to Cart",
+        description: `${product.name} has been added to your cart.`,
+    });
   };
 
   const categories = [
@@ -100,7 +128,7 @@ export default function MarketplacePage() {
       seller: 'Accra Crafts',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'clothing',
       featured: true,
       discount: 14,
@@ -118,7 +146,7 @@ export default function MarketplacePage() {
       seller: 'Lagos Artisans',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       location: 'Nigeria',
       condition: 'new',
@@ -134,7 +162,7 @@ export default function MarketplacePage() {
       seller: 'Ankara Fashion',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'clothing',
       location: 'Kenya',
       condition: 'new',
@@ -150,7 +178,7 @@ export default function MarketplacePage() {
       seller: 'Natural Beauty Co',
       sellerVerified: false,
       image:
-        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaGVhJTIwYnV0dGVyfGVufDF8fHx8MTc1ODEyMTQ5MHww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaGVhJTIwYnV0dGVyfGVufDF8fHx8MTc1ODEyMTQ5MHww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'beauty',
       isFree: true,
       isGifterListing: true,
@@ -167,7 +195,7 @@ export default function MarketplacePage() {
       seller: 'Beads & Beyond',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXdlbHJ5fGVufDF8fHx8MTc1ODEyMTQ5NXww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1515377905703-c4788e51af15?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXdlbHJ5fGVufDF8fHx8MTc1ODEyMTQ5NXww&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       location: 'South Africa',
       condition: 'new',
@@ -183,7 +211,7 @@ export default function MarketplacePage() {
       seller: 'Basket Weavers Co',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXNrZXR8ZW58MXx8fHwxNzU4MTIxNTAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXNrZXR8ZW58MXx8fHwxNzU4MTIxNTAwfDA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'home',
       isFree: true,
       isGifterListing: true,
@@ -200,7 +228,7 @@ export default function MarketplacePage() {
       seller: 'Heritage Textiles',
       sellerVerified: true,
       image:
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYWJyaWN8ZW58MXx8fHwxNzU4MTIxNTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYWJyaWN8ZW58MXx8fHwxNzU4MTIxNTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
       category: 'crafts',
       isFree: true,
       isGifterListing: true,
@@ -387,7 +415,7 @@ export default function MarketplacePage() {
 
   return (
     <>
-    <Header />
+    <Header cartCount={cartCount}/>
     <div className="container mx-auto px-0 sm:px-4 py-6 md:py-8 relative">
       {/* Page Header */}
       <div className="mb-6 md:mb-8 px-4 sm:px-0">

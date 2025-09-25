@@ -83,7 +83,7 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
         <Card>
             <CardHeader>
                 <CardTitle>Preferences</CardTitle>
-                <CardDescription>Customize your experience on AfriConnect.</CardDescription>
+                <CardDescription>Customize your experience on AfriConnect Exchange.</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-center h-40">
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -96,7 +96,7 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Preferences</CardTitle>
-        <CardDescription>Customize your experience on AfriConnect.</CardDescription>
+        <CardDescription>Customize your experience on AfriConnect Exchange.</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

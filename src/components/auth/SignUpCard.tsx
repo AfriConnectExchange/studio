@@ -38,9 +38,9 @@ export default function SignUpCard({
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">AE</span>
           </div>
-          <span className="text-2xl font-bold">Africonnectexchange</span>
+          <span className="text-2xl font-bold">AfriConnect Exchange</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Join Africonnectexchange</h1>
+        <h1 className="text-xl font-semibold mb-2">Join AfriConnect Exchange</h1>
         <p className="text-sm text-muted-foreground">
           Connect, trade, and thrive
         </p>

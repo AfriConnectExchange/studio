@@ -8,6 +8,7 @@ import {
   MapPin,
   Bell,
   TrendingUp,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +54,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
     { id: '/analytics', label: 'Analytics', href: '/analytics' },
     { id: '/reviews', label: 'Reviews', href: '/reviews' },
     { id: '/admin', label: 'Admin Panel', href: '/admin' },
-    { id: '/help', label: 'Help Center', href: '/help' },
+    { id: '/help', label: 'Help Center', href: '/help', icon: HelpCircle },
     { id: '/support', label: 'Support', href: '/support' },
   ];
 
@@ -137,6 +138,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                             className="w-full justify-start"
                             onClick={handleMobileLinkClick}
                           >
+                           {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                             {item.label}
                           </Button>
                         </Link>

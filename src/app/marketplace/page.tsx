@@ -21,6 +21,7 @@ import { ProductGrid } from '@/components/marketplace/ProductGrid';
 import { SearchBar } from '@/components/marketplace/SearchBar';
 import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { Header } from '@/components/dashboard/header';
 
 export interface Product {
   id: number;
@@ -385,6 +386,8 @@ export default function MarketplacePage() {
   };
 
   return (
+    <>
+    <Header />
     <div className="container mx-auto px-0 sm:px-4 py-6 md:py-8 relative">
       {/* Page Header */}
       <div className="mb-6 md:mb-8 px-4 sm:px-0">
@@ -508,5 +511,6 @@ export default function MarketplacePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

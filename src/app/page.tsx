@@ -14,11 +14,13 @@ import {
   initiateEmailSignUp,
   useFirebase,
   setDocumentNonBlocking,
+  useDoc,
+  useMemoFirebase,
 } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber, User } from 'firebase/auth';
 import CheckEmailCard from '@/components/auth/CheckEmailCard';
-import { doc } from 'firebase/firestore';
+import { doc, DocumentData } from 'firebase/firestore';
 
 declare global {
   interface Window {
@@ -36,6 +38,9 @@ export default function Home() {
   const { auth, user, isUserLoading, firestore } = useFirebase();
   const router = useRouter();
 
+  const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<DocumentData>(userDocRef);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,29 +55,36 @@ export default function Home() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  useEffect(() => {
+    if (isUserLoading || isProfileLoading) {
+      return;
+    }
+    
+    if (user) {
+      if (user.emailVerified || user.phoneNumber) {
+        if (userProfile && userProfile.onboardingCompleted) {
+          router.push('/dashboard');
+        } else {
+          router.push('/onboarding');
+        }
+      }
+    }
+  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
+
   // This effect will run when the user's auth state changes.
   useEffect(() => {
-    // If we are in 'check-email' mode and the user becomes available...
     if (authMode === 'check-email' && user) {
-      // Reload user to get the latest emailVerified status
       user.reload().then(() => {
         if (user.emailVerified) {
           toast({
             title: 'Email Verified!',
-            description: 'Your account is active. Redirecting...',
+            description: 'Redirecting to complete your profile...',
           });
-          router.push('/dashboard');
+          // Redirection is handled by the main effect above
         }
       });
     }
-    
-    if(user) {
-        if (user.emailVerified || user.phoneNumber) {
-            router.push('/dashboard');
-        }
-    }
-    
-  }, [user, authMode, router, toast]);
+  }, [user, authMode, toast]);
 
 
   const authBgImage = PlaceHolderImages.find(
@@ -118,6 +130,7 @@ export default function Home() {
       phoneNumber: user.phoneNumber,
       accountStatus: 'Active',
       freeAccessExpiryDate: threeMonthsFromNow.toISOString(),
+      onboardingCompleted: false, // <-- Add onboarding status
       ...extraData,
     };
     
@@ -132,9 +145,8 @@ export default function Home() {
         showAlert('destructive', 'Verification Needed', 'Please verify your email before logging in.');
         await sendEmailVerification(userCredential.user);
         setAuthMode('check-email');
-      } else if (userCredential.user) {
-        router.push('/dashboard');
       }
+      // Successful login redirection is handled by the main effect
     } catch (error: any) {
       showAlert('destructive', 'Login Failed', 'Incorrect email or password.');
     } finally {
@@ -214,7 +226,7 @@ export default function Home() {
         const userCredential = await window.confirmationResult.confirm(otp);
         if (userCredential.user) {
             await createUserDocument(userCredential.user);
-            router.push('/dashboard');
+            // Redirection is handled by the main effect
         }
       } else {
         throw new Error("No confirmation result found.");
@@ -233,7 +245,7 @@ export default function Home() {
   };
 
   const renderAuthCard = () => {
-    if (isUserLoading && authMode !== 'check-email') {
+    if (isUserLoading || isProfileLoading && user) {
       return (
          <div className="flex flex-col items-center justify-center space-y-4 h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>

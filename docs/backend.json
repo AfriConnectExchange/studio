@@ -47,6 +47,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "onboardingCompleted": {
+            "type": "boolean",
+            "description": "Indicates whether the user has completed the onboarding flow."
         }
       },
       "required": [

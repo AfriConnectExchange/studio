@@ -1,0 +1,407 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account in the Africonnectexchange platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "User's phone number."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
+        "accountStatus": {
+          "type": "string",
+          "description": "Status of the user's account (e.g., Active, Inactive, Pending Verification)."
+        },
+        "freeAccessExpiryDate": {
+          "type": "string",
+          "description": "Date when the user's free access period expires.",
+          "format": "date-time"
+        },
+        "roleIds": {
+          "type": "array",
+          "description": "References to Roles. (Relationship: User N:N Role)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "Role": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Role",
+      "type": "object",
+      "description": "Represents a role that a user can have (e.g., buyer, seller, SME, trainer).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the role entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the role (e.g., Buyer, Seller)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the role."
+        },
+        "permissions": {
+          "type": "array",
+          "description": "List of permissions associated with the role.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "EmailVerification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmailVerification",
+      "type": "object",
+      "description": "Stores email verification tokens and their status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the email verification record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N EmailVerification)"
+        },
+        "token": {
+          "type": "string",
+          "description": "The email verification token."
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "Date and time when the token expires.",
+          "format": "date-time"
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Indicates whether the email has been verified."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "token",
+        "expiryDate"
+      ]
+    },
+    "OTP": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OTP",
+      "type": "object",
+      "description": "Stores OTP (One-Time Password) information for phone number verification.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OTP record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N OTP)"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number the OTP was sent to."
+        },
+        "otp": {
+          "type": "string",
+          "description": "The one-time password."
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "Date and time when the OTP expires.",
+          "format": "date-time"
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Indicates whether the OTP has been verified."
+        },
+        "attempts": {
+          "type": "number",
+          "description": "Number of attempts made to verify the OTP."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "phoneNumber",
+        "otp",
+        "expiryDate"
+      ]
+    },
+    "PasswordReset": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PasswordReset",
+      "type": "object",
+      "description": "Stores password reset tokens and their status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the password reset record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N PasswordReset)"
+        },
+        "token": {
+          "type": "string",
+          "description": "The password reset token."
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "Date and time when the token expires.",
+          "format": "date-time"
+        },
+        "isUsed": {
+          "type": "boolean",
+          "description": "Indicates whether the token has been used to reset the password."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "token",
+        "expiryDate"
+      ]
+    },
+    "AccountLock": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AccountLock",
+      "type": "object",
+      "description": "Stores account lock information after failed login attempts.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the account lock record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N AccountLock)"
+        },
+        "lockoutExpiryDate": {
+          "type": "string",
+          "description": "Date and time when the account lock expires.",
+          "format": "date-time"
+        },
+        "failedAttempts": {
+          "type": "number",
+          "description": "The number of failed login attempts before lockout."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "lockoutExpiryDate"
+      ]
+    },
+    "Preference": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Preference",
+      "type": "object",
+      "description": "Stores user preferences such as language, timezone, and notification settings.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the preference record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Preference)"
+        },
+        "language": {
+          "type": "string",
+          "description": "Preferred language of the user."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "User's timezone."
+        },
+        "notificationSettings": {
+          "type": "string",
+          "description": "User's notification preferences (e.g., email, SMS, push)."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Access is restricted to the user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/emailVerifications/{emailVerificationId}",
+        "definition": {
+          "entityName": "EmailVerification",
+          "schema": {
+            "$ref": "#/backend/entities/EmailVerification"
+          },
+          "description": "Stores email verification tokens for each user. Only the user should be able to create, read, update, or delete their own email verification records.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "emailVerificationId",
+              "description": "The unique identifier for the email verification record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/otps/{otpId}",
+        "definition": {
+          "entityName": "OTP",
+          "schema": {
+            "$ref": "#/backend/entities/OTP"
+          },
+          "description": "Stores OTPs for phone number verification. Only the user should be able to create, read, update, or delete their own OTP records.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "otpId",
+              "description": "The unique identifier for the OTP record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/passwordResets/{passwordResetId}",
+        "definition": {
+          "entityName": "PasswordReset",
+          "schema": {
+            "$ref": "#/backend/entities/PasswordReset"
+          },
+          "description": "Stores password reset tokens. Only the user should be able to create, read, update, or delete their own password reset records.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "passwordResetId",
+              "description": "The unique identifier for the password reset record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/accountLocks/{accountLockId}",
+        "definition": {
+          "entityName": "AccountLock",
+          "schema": {
+            "$ref": "#/backend/entities/AccountLock"
+          },
+          "description": "Stores account lock information. Only the system (via Cloud Functions) should be able to manage these records.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "accountLockId",
+              "description": "The unique identifier for the account lock record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/preferences/{preferenceId}",
+        "definition": {
+          "entityName": "Preference",
+          "schema": {
+            "$ref": "#/backend/entities/Preference"
+          },
+          "description": "Stores user preferences. Only the user should be able to manage their own preferences.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "preferenceId",
+              "description": "The unique identifier for the preference record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles/{roleId}",
+        "definition": {
+          "entityName": "Role",
+          "schema": {
+            "$ref": "#/backend/entities/Role"
+          },
+          "description": "Stores role definitions. Access is typically restricted to administrators.",
+          "params": [
+            {
+              "name": "roleId",
+              "description": "The unique identifier for the role."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to support user registration, authentication, profile management, and role-based access control for the Africonnectexchange platform. It emphasizes security, scalability, and ease of debugging by adhering to the principles of Authorization Independence, Structural Segregation, Access Modeling, and Data Clarity.\n\n**Authorization Independence:**\n\n*   Authorization Independence is achieved through path-based ownership for User documents (`/users/{userId}`) and related subcollections like `emailVerifications`, `otps`, `passwordResets`, `accountLocks`, and `preferences`. Since access to these subcollections is exclusively for the user identified by `{userId}`, no `get()` calls are required in security rules. Roles are managed via a separate collection, `/roles/{roleId}`, and the user's `roleIds` array in their user document. If more complex role-based access control is needed for other resources, consider denormalizing the user's roles or specific permissions into the documents requiring access control.\n\n**Structural Segregation:**\n\n*   The structure segregates user-specific data (profile, preferences, authentication-related data) under the `/users/{userId}` path. This ensures that access control rules are consistent and straightforward for each user's data. Roles are stored in a separate `/roles` collection, enabling easy management and modification of roles and permissions without affecting user data.\n\n**Access Modeling:**\n\n*   **Private Data:** Path-based ownership (`/users/{userId}/...`) is used for all user-specific data, ensuring that only the authenticated user can access their own data.\n*   **Global Roles (DBAC):** Roles are stored in the `/roles` collection. If existence-based role checks were needed (e.g., `/roles_admin/{uid}`), a separate collection would be used.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of data into user-specific paths enables secure `list` operations. For instance, listing email verifications is not allowed at the collection level; they can only be accessed within a specific user's document (`/users/{userId}/emailVerifications`). If public user profiles are desired, a separate `/public_profiles` collection would be necessary, containing only the data intended for public consumption.\n\n**Invariants:**\n\n*   The structure supports invariants by centralizing user data under a single user ID. Timestamps can be enforced in security rules using `request.time`. Denormalized data can be maintained using Cloud Functions triggered by document updates.\n\n**Explanation of Paths:**\n\n*   `/users/{userId}`: Stores user profile information. Access is restricted to the user with the matching `userId`.\n*   `/users/{userId}/emailVerifications/{emailVerificationId}`: Stores email verification tokens for each user.  Only the user should be able to create, read, update, or delete their own email verification records.\n*   `/users/{userId}/otps/{otpId}`: Stores OTPs for phone number verification.  Only the user should be able to create, read, update, or delete their own OTP records.\n*   `/users/{userId}/passwordResets/{passwordResetId}`: Stores password reset tokens. Only the user should be able to create, read, update, or delete their own password reset records.\n*   `/users/{userId}/accountLocks/{accountLockId}`: Stores account lock information. Only the system (via Cloud Functions) should be able to manage these records.\n*   `/users/{userId}/preferences/{preferenceId}`: Stores user preferences. Only the user should be able to manage their own preferences.\n*   `/roles/{roleId}`: Stores role definitions.  Access is typically restricted to administrators."
+  }
+}

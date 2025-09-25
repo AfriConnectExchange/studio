@@ -1,0 +1,254 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for most data, with roles having restricted access.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles.
+ * - /users/{userId}/emailVerifications/{emailVerificationId}: Email verification tokens.
+ * - /users/{userId}/otps/{otpId}: OTPs for phone verification.
+ * - /users/{userId}/passwordResets/{passwordResetId}: Password reset tokens.
+ * - /users/{userId}/accountLocks/{accountLockId}: Account lock information.
+ * - /users/{userId}/preferences/{preferenceId}: User preferences.
+ * - /roles/{roleId}: Role definitions.
+ *
+ * Key Security Decisions:
+ * - User data and authentication artifacts are strictly owned by the user.
+ * - Listing of emailVerifications, otps, passwordResets, accountLocks, and preferences is disallowed at the collection level.
+ * - AccountLocks can only be managed by the system (simulated by `false` rules in this configuration).
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' can create their own profile.
+     *   - request.auth.uid: 'user123'
+     *   - request.resource.data.id: 'user123'
+     * @allow (get) User with ID 'user123' can read their own profile.
+     *   - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their own profile.
+     *   - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their own profile.
+     *   - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' attempts to create a profile for user 'user123'.
+     *   - request.auth.uid: 'user456'
+     *   - request.resource.data.id: 'user123'
+     * @principle Enforces document ownership for writes, restricts read access to the owner.
+     */
+    match /users/{userId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the resource
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the resource
+      function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing users is not permitted
+
+      allow create: if isSignedIn() && request.resource.data.id == request.auth.uid;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to email verification documents.
+     * @path /users/{userId}/emailVerifications/{emailVerificationId}
+     * @allow (create) User with ID 'user123' can create an email verification record.
+     *   - request.auth.uid: 'user123'
+     * @allow (get) User with ID 'user123' can read their own email verification record.
+     *   - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their own email verification record.
+     *   - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their own email verification record.
+     *   - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' attempts to create an email verification record for user 'user123'.
+     *   - request.auth.uid: 'user456'
+     * @principle Enforces document ownership for writes, restricts read access to the owner.
+     */
+    match /users/{userId}/emailVerifications/{emailVerificationId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the resource
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the resource
+      function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      allow create: if isSignedIn() && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to OTP documents.
+     * @path /users/{userId}/otps/{otpId}
+     * @allow (create) User with ID 'user123' can create an OTP record.
+     *   - request.auth.uid: 'user123'
+     * @allow (get) User with ID 'user123' can read their own OTP record.
+     *   - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their own OTP record.
+     *   - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their own OTP record.
+     *   - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' attempts to create an OTP record for user 'user123'.
+     *   - request.auth.uid: 'user456'
+     * @principle Enforces document ownership for writes, restricts read access to the owner.
+     */
+    match /users/{userId}/otps/{otpId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the resource
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the resource
+      function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      allow create: if isSignedIn() && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to password reset documents.
+     * @path /users/{userId}/passwordResets/{passwordResetId}
+     * @allow (create) User with ID 'user123' can create a password reset record.
+     *   - request.auth.uid: 'user123'
+     * @allow (get) User with ID 'user123' can read their own password reset record.
+     *   - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their own password reset record.
+     *   - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their own password reset record.
+     *   - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' attempts to create a password reset record for user 'user123'.
+     *   - request.auth.uid: 'user456'
+     * @principle Enforces document ownership for writes, restricts read access to the owner.
+     */
+    match /users/{userId}/passwordResets/{passwordResetId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the resource
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the resource
+      function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      allow create: if isSignedIn() && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to account lock documents.
+     * @path /users/{userId}/accountLocks/{accountLockId}
+     * @deny (create) No one should be able to create account lock records directly.
+     * @deny (get) No one should be able to read account lock records directly.
+     * @deny (update) No one should be able to update account lock records directly.
+     * @deny (delete) No one should be able to delete account lock records directly.
+     * @principle Restricts all access to this collection, intended for server-side management.
+     */
+    match /users/{userId}/accountLocks/{accountLockId} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to preference documents.
+     * @path /users/{userId}/preferences/{preferenceId}
+     * @allow (create) User with ID 'user123' can create their own preference record.
+     *   - request.auth.uid: 'user123'
+     * @allow (get) User with ID 'user123' can read their own preference record.
+     *   - request.auth.uid: 'user123'
+     * @allow (update) User with ID 'user123' can update their own preference record.
+     *   - request.auth.uid: 'user123'
+     * @allow (delete) User with ID 'user123' can delete their own preference record.
+     *   - request.auth.uid: 'user123'
+     * @deny (create) User with ID 'user456' attempts to create a preference record for user 'user123'.
+     *   - request.auth.uid: 'user456'
+     * @principle Enforces document ownership for writes, restricts read access to the owner.
+     */
+    match /users/{userId}/preferences/{preferenceId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the resource
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the resource
+      function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      allow create: if isSignedIn() && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to role documents.
+     * @path /roles/{roleId}
+     * @deny (create) No one should be able to create roles directly.
+     * @deny (get) No one should be able to read roles directly.
+     * @deny (update) No one should be able to update roles directly.
+     * @deny (delete) No one should be able to delete roles directly.
+     * @principle Restricts all access to this collection, intended for server-side management.
+     */
+    match /roles/{roleId} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

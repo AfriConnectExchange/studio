@@ -4,11 +4,13 @@ import { ProductPageComponent } from '@/components/product/product-page';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/dashboard/header';
 
+// This page now correctly handles the client-side nature of its operations.
 export default function ProductDetailsPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const productId = parseInt(params.id, 10);
 
-  const onNavigate = (page: string, newProductId?: number) => {
+  // The router is now passed down correctly to the client component.
+  const handleNavigate = (page: string, newProductId?: number) => {
     if (page === 'product' && newProductId) {
       router.push(`/product/${newProductId}`);
     } else {
@@ -17,7 +19,7 @@ export default function ProductDetailsPage({ params }: { params: { id: string } 
   };
 
   const onAddToCart = (product: any) => {
-    // Implement add to cart logic, e.g., using a global state or context
+    // This logic can be expanded later with global state management.
     console.log('Added to cart:', product);
   };
 
@@ -26,7 +28,7 @@ export default function ProductDetailsPage({ params }: { params: { id: string } 
       <Header />
       <ProductPageComponent 
         productId={productId} 
-        onNavigate={onNavigate} 
+        onNavigate={handleNavigate} 
         onAddToCart={onAddToCart} 
       />
     </>

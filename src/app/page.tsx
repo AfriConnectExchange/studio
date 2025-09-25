@@ -71,9 +71,15 @@ export default function Home() {
              router.push('/onboarding');
           }
         }
+      } else if (!user.emailVerified && authMode !== 'check-email') {
+        // If the user object exists but the email isn't verified,
+        // force them to the email check screen. This can happen if they
+        // close the tab after registering but before verifying.
+        setAuthMode('check-email');
       }
     }
-  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
+  }, [user, userProfile, isUserLoading, isProfileLoading, router, authMode]);
+
 
   // This effect will run to check for email verification status.
   useEffect(() => {
@@ -91,7 +97,7 @@ export default function Home() {
             title: 'Email Verified!',
             description: 'Redirecting to complete your profile...',
           });
-          // The main useEffect will handle the redirection.
+          router.push('/onboarding');
         }
       }, 3000); // Check every 3 seconds
     }
@@ -102,7 +108,7 @@ export default function Home() {
         setIsVerifying(false);
       }
     };
-  }, [user, auth, authMode, toast]);
+  }, [user, auth, authMode, toast, router]);
 
 
   const authBgImage = PlaceHolderImages.find(
@@ -149,6 +155,7 @@ export default function Home() {
       accountStatus: 'Active',
       freeAccessExpiryDate: threeMonthsFromNow.toISOString(),
       onboardingCompleted: false,
+      walkthroughCompleted: false, // Add this new flag
       ...extraData,
     };
     
@@ -245,7 +252,7 @@ export default function Home() {
         const userCredential = await window.confirmationResult.confirm(otp);
         if (userCredential.user) {
             await createUserDocument(userCredential.user);
-            // Redirection is handled by the main effect
+            // Redirection to onboarding is handled by the main effect
         }
       } else {
         throw new Error("No confirmation result found.");

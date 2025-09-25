@@ -70,7 +70,7 @@ export const helpCategories: HelpCategory[] = [
     name: 'Shipping & Delivery',
     description: 'Tracking orders, delivery times, and shipping issues',
     icon: Truck,
-    articleCount: 0,
+    articleCount: 2,
     color: 'text-indigo-600 bg-indigo-100',
   },
   {
@@ -88,27 +88,20 @@ export const helpArticles: HelpArticle[] = [
   {
     id: '1',
     title: 'How to create your AfriConnect account',
-    content: `Creating your AfriConnect account is quick and easy:
+    content: `Creating your AfriConnect account is quick and easy. Follow these simple steps to get started on our platform.
 
 **1. Visit the Registration Page**
-Click "Sign Up" on the homepage to begin.
+Click the "Sign Up" button on the homepage to begin the registration process.
 
-**2. Choose Registration Method**
-You can register using your email address or your phone number.
+**2. Choose Your Registration Method**
+You can register using your email address or your phone number. Select the option that is most convenient for you.
 
-**3. Email Registration**
-If you choose email, enter your full name, email address, and create a strong password. You'll receive a verification link in your inbox.
+**3. Complete the Form**
+- **For email registration**: Enter your full name, email address, and create a strong password. A verification link will be sent to your inbox.
+- **For phone registration**: Enter your full name and phone number. You will receive a one-time password (OTP) via SMS to verify your number.
 
-**4. Phone Registration**
-If you choose phone, enter your full name and phone number. You will receive a one-time password (OTP) via SMS to verify your number.
-
-**5. Complete Your Profile**
-Once verified, you'll be guided through a short onboarding process to complete your profile.
-
-**Verification Process:**
-- The email verification link is valid for 24 hours.
-- The phone OTP is valid for 5 minutes.
-- Your account is active immediately after verification, and you can start exploring!`,
+**4. Complete Your Profile**
+Once you are verified, you'll be guided through a short onboarding process to add more details to your profile. A complete profile helps build trust within the community.`,
     category: 'getting-started',
     tags: ['registration', 'signup', 'account creation', 'verification'],
     helpful: 89,
@@ -122,17 +115,17 @@ Once verified, you'll be guided through a short onboarding process to complete y
     content: `AfriConnect is your gateway to authentic African products, services, and skills training.
 
 **What You'll Find:**
-- Traditional crafts, textiles, and art.
-- Modern African fashion, jewelry, and accessories.
-- Natural beauty, wellness, and food products.
+- Traditional crafts, textiles, and art from across the continent.
+- Modern African fashion, jewelry, and accessories from talented designers.
+- Natural beauty, wellness, and food products sourced responsibly.
 - Digital courses and professional training from African experts.
 
 **Key Features:**
-- **Verified Sellers**: All sellers undergo a KYC (Know Your Customer) verification process for your safety.
+- **Verified Sellers**: All sellers undergo a KYC (Know Your Customer) verification process for your safety and peace of mind.
 - **Secure Payments**: We offer multiple payment options, including our highly recommended Escrow service for secure transactions.
-- **Global Shipping**: Our sellers ship to over 50 countries worldwide.
+- **Global Shipping**: Our sellers ship to over 50 countries worldwide, bringing Africa to your doorstep.
 - **Barter System**: Don't have cash? Propose a trade of goods or services with sellers who are open to bartering.
-- **Community Reviews**: Read real feedback from verified buyers to make informed decisions.`,
+- **Community Reviews**: Read real feedback from verified buyers to make informed purchasing decisions.`,
     category: 'getting-started',
     tags: ['marketplace', 'overview', 'features', 'products'],
     helpful: 156,
@@ -144,30 +137,29 @@ Once verified, you'll be guided through a short onboarding process to complete y
   {
     id: '3',
     title: 'How to complete your profile and KYC',
-    content: `A complete and verified profile unlocks all features of AfriConnect.
+    content: `A complete and verified profile unlocks all features of AfriConnect and builds trust with other users.
 
 **1. Complete Your Onboarding**
-After registering, you will be prompted to complete a short onboarding flow where you can select your primary role (e.g., Buyer, Seller) and provide basic personal details.
+After registering, you will be prompted to complete a short onboarding flow. Here, you can select your primary role (e.g., Buyer, Seller) and provide basic personal details.
 
 **2. Access Your Profile Settings**
 Click on your user icon in the header and navigate to your Profile to update your information at any time.
 
 **3. KYC for Sellers, SMEs, and Trainers**
-If your role involves selling goods or services, you must complete KYC verification.
+If your role involves selling goods or services, you must complete our KYC (Know-Your-Customer) verification process.
 - Navigate to your Profile page.
 - You will see a prompt to start your KYC verification.
 - Follow the steps to provide your personal and business information, and upload the required documents.
 
 **Required Documents May Include:**
-- Government-issued ID (Passport, National ID, Driver's License)
-- Proof of Address (e.g., utility bill)
+- A clear photo of a Government-issued ID (Passport, National ID, Driver's License)
+- Proof of Address (e.g., a recent utility bill)
 - Business Registration Documents (for SMEs)
 
 **Benefits of a Complete & Verified Profile:**
-- Full access to all platform features.
-- Increased trust from other users.
-- Faster checkout and transaction processing.
-- A "Verified" badge on your profile.`,
+- Full access to all platform features, including selling.
+- Increased trust from potential buyers.
+- A "Verified" badge displayed on your profile.`,
     category: 'account',
     tags: ['profile', 'personal information', 'settings', 'verification', 'kyc'],
     helpful: 73,
@@ -184,22 +176,22 @@ If your role involves selling goods or services, you must complete KYC verificat
 Enter keywords like product names, seller names, or categories into the search bar at the top of the marketplace page. For best results, use at least 3 characters.
 
 **Filtering Your Results**
-On the marketplace page, you can use the filter panel on the left (or via the "Filters" button on mobile) to narrow down your results:
-- **Categories**: Select a specific product category.
-- **Price Range**: Set a minimum and maximum price.
+On the marketplace page, use the filter panel on the left (or via the "Filters" button on mobile) to narrow down your results:
+- **Categories**: Select a specific product category like 'Clothing' or 'Arts & Crafts'.
+- **Price Range**: Set a minimum and maximum price to fit your budget.
 - **Product Filters**:
-  - **Free Listings Only**: Show only items offered for free.
-  - **Verified Sellers Only**: Show items from sellers who have completed KYC.
+  - **Free Listings Only**: Show only items offered for free by our community.
+  - **Verified Sellers Only**: Show items from sellers who have completed identity verification.
   - **On Sale**: Find products with active discounts.
-  - **Free Shipping**: Filter for items that ship for free.
+  - **Free Shipping**: Filter for items that have no additional shipping costs.
 
 **Sorting Your Results**
 Use the "Sort by" dropdown to organize the products by:
-- Most Relevant (default)
-- Price: Low to High
-- Price: High to Low
-- Highest Rated
-- Newest First`,
+- **Most Relevant** (default)
+- **Price: Low to High**
+- **Price: High to Low**
+- **Highest Rated**
+- **Newest First**`,
     category: 'buying',
     tags: ['search', 'filters', 'products', 'categories'],
     helpful: 94,
@@ -214,22 +206,22 @@ Use the "Sort by" dropdown to organize the products by:
     content: `We offer a variety of secure payment methods to suit your needs.
 
 **1. Escrow Payment (Recommended)**
-This is the most secure way to pay. Your money is held by AfriConnect and only released to the seller after you confirm that you've received your item as described. This protects you from fraud.
+This is the most secure way to pay. Your money is held by AfriConnect and only released to the seller after you confirm that you've received your item as described. This protects you from fraud and ensures you get what you paid for.
 
 **2. Card Payment (Stripe)**
-Pay directly using your debit or credit card. We partner with Stripe, a global leader in online payments, to ensure your card details are processed securely.
+Pay directly using your debit or credit card. We partner with Stripe, a global leader in online payments, to ensure your card details are processed securely and are never stored on our servers.
 
 **3. Digital Wallets (PayPal, Apple Pay, Google Pay)**
 Use your favorite digital wallet for a fast and convenient checkout experience.
 
 **4. Flutterwave**
-A great option for users in Africa, allowing payments via mobile money, bank transfer, and other local methods.
+A great option for users in Africa, allowing payments via mobile money (like M-Pesa), bank transfer, USSD, and other local methods.
 
 **5. Cash on Delivery**
-For certain locations and sellers, you can choose to pay in cash when your order is delivered. This option is typically only available for lower-value items.
+For certain locations and sellers, you can choose to pay in cash when your order is delivered. This option is typically only available for lower-value items and may be limited by seller.
 
 **6. Barter Exchange**
-If a seller has enabled this option, you can propose to trade an item or service of yours instead of paying with money.`,
+If a seller has enabled this option on their listing, you can propose to trade an item or service of yours instead of paying with money. This is a unique feature to foster community trade.`,
     category: 'payments',
     tags: [
       'escrow',
@@ -243,6 +235,59 @@ If a seller has enabled this option, you can propose to trade an item or service
     notHelpful: 7,
     lastUpdated: '2024-01-17',
     featured: true,
+  },
+  // Shipping
+  {
+    id: '7',
+    title: 'How to track your order',
+    content: `Once your order is shipped, you can easily track its journey to your doorstep.
+
+**1. Find Your Tracking Number**
+- Check the 'Order Confirmed' or 'Order Shipped' notification in your account.
+- You will also receive an email with the tracking number.
+
+**2. Go to the Tracking Page**
+- Click on the "Track Orders" link in the main navigation menu or your profile.
+
+**3. Enter Your Tracking Number**
+- Enter the tracking number or your Order ID into the search field and click "Track".
+
+**4. View Your Shipment History**
+- You will see a detailed timeline of your package's journey, including its current location and status.
+- The estimated delivery date will be displayed at the top.
+
+**What if my tracking number doesn't work?**
+- Please allow 24-48 hours for the tracking information to be updated by the courier after your order has been shipped.
+- If it still doesn't work after this time, please contact the seller or our support team for assistance.`,
+    category: 'shipping',
+    tags: ['tracking', 'delivery', 'shipping', 'order status'],
+    helpful: 112,
+    notHelpful: 6,
+    lastUpdated: '2024-01-22',
+  },
+   {
+    id: '8',
+    title: 'Understanding shipping times and costs',
+    content: `Shipping times and costs vary depending on the seller's location, your location, and the shipping method chosen.
+
+**Shipping Times**
+- **Domestic Shipping**: Typically takes 3-7 business days within the same country.
+- **International Shipping**: Can take anywhere from 7-21 business days.
+
+Please note that these are estimates. Delays can occur due to customs, public holidays, or other unforeseen circumstances.
+
+**Shipping Costs**
+- Costs are calculated by the seller based on the package weight, dimensions, and destination.
+- You can see the estimated shipping cost on the product page and at checkout.
+- Some sellers offer **free shipping** on certain items or for orders above a certain value. Use the "Free Shipping" filter in the marketplace to find these items.
+
+**Customs and Import Duties**
+For international orders, you may be subject to customs fees, import duties, and taxes. These charges are **not included** in the item price or shipping cost and are the responsibility of the buyer. Please check with your local customs office for more information.`,
+    category: 'shipping',
+    tags: ['shipping cost', 'delivery time', 'customs', 'import duty'],
+    helpful: 98,
+    notHelpful: 11,
+    lastUpdated: '2024-01-23',
   },
   // Security
   {

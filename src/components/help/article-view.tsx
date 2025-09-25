@@ -27,6 +27,7 @@ export function ArticleView({
 
   const renderContent = (content: string) => {
     return content.split('\n\n').map((paragraph, index) => {
+      // Check for headings
       if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
         return (
           <h3
@@ -37,9 +38,11 @@ export function ArticleView({
           </h3>
         );
       }
-      if (paragraph.match(/^\d+\./)) {
+      
+      // Check for numbered lists
+      if (/^\d+\./.test(paragraph)) {
         return (
-          <ol key={index} className="list-decimal list-inside space-y-2 my-4">
+          <ol key={index} className="list-decimal list-inside space-y-2 my-4 pl-4">
             {paragraph.split('\n').map((item, i) => (
               <li key={i} className="text-muted-foreground leading-relaxed">
                 {item.replace(/^\d+\.\s*/, '')}
@@ -48,9 +51,11 @@ export function ArticleView({
           </ol>
         );
       }
+      
+      // Check for bulleted lists
       if (paragraph.startsWith('- ')) {
         return (
-          <ul key={index} className="list-disc list-inside space-y-2 my-4">
+          <ul key={index} className="list-disc list-inside space-y-2 my-4 pl-4">
             {paragraph.split('\n').map((item, i) => (
               <li key={i} className="text-muted-foreground leading-relaxed">
                 {item.replace(/^- \s*/, '')}
@@ -59,9 +64,18 @@ export function ArticleView({
           </ul>
         );
       }
+
+      // Check for bold text within a paragraph
+      const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+
       return (
         <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
-          {paragraph}
+          {parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={i} className="font-medium text-foreground">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+          })}
         </p>
       );
     });

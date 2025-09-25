@@ -21,14 +21,9 @@ interface WalkthroughStep {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  position: 'center' | 'top' | 'bottom' | 'left' | 'right';
   action?: {
     label: string;
     page: string;
-  };
-  highlight?: {
-    element: string;
-    offset?: { x: number; y: number };
   };
 }
 
@@ -38,55 +33,38 @@ const walkthroughSteps: WalkthroughStep[] = [
     title: 'Welcome to AfriConnect! 🎉',
     description: 'Your trusted marketplace for authentic African products, skills training, and seamless money transfers. Let\'s take a quick tour!',
     icon: Play,
-    position: 'center'
   },
   {
     id: 'revenue',
     title: 'Track Your Performance',
     description: 'Get a quick overview of your total revenue and other key metrics right from your dashboard.',
     icon: Search,
-    position: 'bottom',
-    highlight: {
-      element: '[data-tour="revenue"]',
-    }
   },
   {
     id: 'profile',
     title: 'Manage Your Profile',
     description: 'Complete your profile to access all features. Sellers need KYC verification to start selling.',
     icon: User,
-    position: 'bottom',
     action: {
       label: 'Complete Profile',
       page: 'profile'
     },
-    highlight: {
-      element: '[data-tour="profile"]',
-    }
   },
     {
     id: 'notifications',
     title: 'Stay Updated',
     description: 'Get notified about order updates, new products, and special offers from your favorite sellers.',
     icon: Bell,
-    position: 'bottom',
-    highlight: {
-      element: '[data-tour="notifications"]',
-    }
   },
   {
     id: 'search',
     title: 'Discover Amazing Products',
     description: 'Use our powerful search to find authentic African products from verified sellers across the continent.',
     icon: Search,
-    position: 'bottom',
     action: {
       label: 'Explore Marketplace',
       page: 'marketplace'
     },
-    highlight: {
-      element: '[data-tour="search"]',
-    }
   },
 ];
 
@@ -98,7 +76,6 @@ export function OnboardingWalkthrough({
 }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [highlightedElementRect, setHighlightedElementRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -108,19 +85,6 @@ export function OnboardingWalkthrough({
   }, [isOpen]);
   
   const currentStepData = walkthroughSteps[currentStep];
-
-  useEffect(() => {
-    if (isOpen && currentStepData.highlight) {
-      const element = document.querySelector(currentStepData.highlight.element);
-      if (element) {
-        setHighlightedElementRect(element.getBoundingClientRect());
-      } else {
-        setHighlightedElementRect(null);
-      }
-    } else {
-       setHighlightedElementRect(null);
-    }
-  }, [isOpen, currentStep, currentStepData.highlight]);
 
   const handleNext = () => {
     if (currentStep < walkthroughSteps.length - 1) {
@@ -156,47 +120,11 @@ export function OnboardingWalkthrough({
   };
   
   const getModalPosition = () => {
-    if (!highlightedElementRect) {
-      return {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      };
-    }
-
-    const modalWidth = 384; // w-96
-    const modalHeight = 350; // approximate height
-    const offset = 20;
-
-    let top, left;
-
-    switch (currentStepData.position) {
-      case 'bottom':
-        top = highlightedElementRect.bottom + offset;
-        left = highlightedElementRect.left + highlightedElementRect.width / 2 - modalWidth / 2;
-        break;
-      case 'top':
-        top = highlightedElementRect.top - modalHeight - offset;
-        left = highlightedElementRect.left + highlightedElementRect.width / 2 - modalWidth / 2;
-        break;
-      case 'left':
-        top = highlightedElementRect.top + highlightedElementRect.height / 2 - modalHeight / 2;
-        left = highlightedElementRect.left - modalWidth - offset;
-        break;
-      case 'right':
-        top = highlightedElementRect.top + highlightedElementRect.height / 2 - modalHeight / 2;
-        left = highlightedElementRect.right + offset;
-        break;
-      default: // center
-        return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-    }
-    
-    // Clamp values to be within viewport
-    left = Math.max(offset, Math.min(left, window.innerWidth - modalWidth - offset));
-    top = Math.max(offset, Math.min(top, window.innerHeight - modalHeight - offset));
-
-
-    return { top: `${top}px`, left: `${left}px` };
+    return {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    };
   };
 
   if (!isOpen) return null;

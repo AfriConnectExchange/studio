@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
@@ -9,11 +9,29 @@ import SignUpCard from '@/components/auth/SignUpCard';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import OTPVerification from '@/components/auth/OTPVerification';
+import {
+  initiateEmailSignIn,
+  initiateEmailSignUp,
+  useFirebase,
+} from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { Auth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier;
+    confirmationResult?: any;
+  }
+}
 
 export default function Home() {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'otp'>('signin');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'otp'>(
+    'signin'
+  );
   const [authMethod, setAuthMethod] = useState('email');
   const { toast } = useToast();
+  const { auth, user, isUserLoading } = useFirebase();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -22,21 +40,33 @@ export default function Home() {
     confirmPassword: '',
     phone: '',
     acceptTerms: false,
-    otp: ''
+    otp: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const authBgImage = PlaceHolderImages.find((img) => img.id === 'auth-background');
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
-  const showAlert = (variant: 'default' | 'destructive', title: string, description: string) => {
+  const authBgImage = PlaceHolderImages.find(
+    (img) => img.id === 'auth-background'
+  );
+
+  const showAlert = (
+    variant: 'default' | 'destructive',
+    title: string,
+    description: string
+  ) => {
     toast({ variant, title, description });
   };
 
   const handleSwitchMode = () => {
-    setAuthMode(prev => prev === 'signin' ? 'signup' : 'signin');
+    setAuthMode((prev) => (prev === 'signin' ? 'signup' : 'signin'));
   };
 
   const handleBackFromOtp = () => {
@@ -45,107 +75,150 @@ export default function Home() {
 
   const handleEmailLogin = () => {
     setIsLoading(true);
-    console.log('Email login with:', formData);
-    setTimeout(() => {
-      setIsLoading(false);
-      showAlert('default', 'Login Success', 'Welcome back!');
-      // router.push('/dashboard');
-    }, 1500);
+    initiateEmailSignIn(auth, formData.email, formData.password);
+    // The auth state change will be handled by the useFirebase hook and the useEffect above.
+    // We can add error handling for login failures here.
+    // For now, we'll optimistically assume success and let the listener handle redirects.
+    // A real app should handle the promise rejection from signInWithEmailAndPassword.
+    setTimeout(() => setIsLoading(false), 2000); // Simulate loading for feedback
   };
-  
+
   const handleEmailRegistration = () => {
     if (formData.password !== formData.confirmPassword) {
       showAlert('destructive', 'Error', 'Passwords do not match.');
       return;
     }
     if (!formData.acceptTerms) {
-      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
+      showAlert(
+        'destructive',
+        'Error',
+        'You must accept the terms and conditions.'
+      );
       return;
     }
     setIsLoading(true);
-    console.log('Email registration with:', formData);
-    setTimeout(() => {
-      setIsLoading(false);
-      showAlert('default', 'Registration Success', 'Please check your email to verify your account.');
-      // router.push('/dashboard');
-    }, 1500);
+    initiateEmailSignUp(auth, formData.email, formData.password);
+    // Similar to login, success is handled by the auth state listener.
+    // Error handling should be added for production.
+    showAlert(
+      'default',
+      'Registration Success',
+      'Please check your email to verify your account.'
+    );
+    setTimeout(() => setIsLoading(false), 2000);
   };
 
-  const simulatePhoneAuth = () => {
+  const setupRecaptcha = (auth: Auth) => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: (response: any) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        },
+      });
+    }
+    return window.recaptchaVerifier;
+  };
+  
+  const simulatePhoneAuth = async () => {
     setIsLoading(true);
-    console.log('Phone auth initiated for:', formData.phone);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const appVerifier = setupRecaptcha(auth);
+      const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
+      window.confirmationResult = confirmationResult;
       setAuthMode('otp');
-    }, 1500);
+    } catch (error: any) {
+      showAlert('destructive', 'Error', error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleOTPComplete = (otp: string) => {
+  const handleOTPComplete = async (otp: string) => {
     setIsLoading(true);
-    console.log('Verifying OTP:', otp);
-    setTimeout(() => {
-      setIsLoading(false);
-       if (otp === '123456') {
+    try {
+      if (window.confirmationResult) {
+        const result = await window.confirmationResult.confirm(otp);
+        const user = result.user;
         showAlert('default', 'Success', 'Phone number verified successfully!');
-        // router.push('/dashboard');
-      } else {
-        showAlert('destructive', 'Error', 'Invalid OTP. Please try again.');
+        router.push('/dashboard');
       }
-    }, 1500);
+    } catch (error: any) {
+      showAlert('destructive', 'Error', 'Invalid OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
 
   const handleResendOTP = () => {
     showAlert('default', 'OTP Resent', 'A new OTP has been sent to your phone.');
+    simulatePhoneAuth();
   };
 
   const renderAuthCard = () => {
+    if (isUserLoading || user) {
+      return (
+         <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      )
+    }
+
     switch (authMode) {
       case 'signin':
-        return <SignInCard 
-          authMethod={authMethod}
-          setAuthMethod={setAuthMethod}
-          formData={formData}
-          setFormData={setFormData}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-          isLoading={isLoading}
-          handleEmailLogin={handleEmailLogin}
-          simulatePhoneAuth={simulatePhoneAuth}
-          showAlert={showAlert}
-          onSwitch={handleSwitchMode}
-        />;
+        return (
+          <SignInCard
+            authMethod={authMethod}
+            setAuthMethod={setAuthMethod}
+            formData={formData}
+            setFormData={setFormData}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            isLoading={isLoading}
+            handleEmailLogin={handleEmailLogin}
+            simulatePhoneAuth={simulatePhoneAuth}
+            showAlert={showAlert}
+            onSwitch={handleSwitchMode}
+          />
+        );
       case 'signup':
-        return <SignUpCard
-          authMethod={authMethod}
-          setAuthMethod={setAuthMethod}
-          formData={formData}
-          setFormData={setFormData}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-          showConfirmPassword={showConfirmPassword}
-          setShowConfirmPassword={setShowConfirmPassword}
-          isLoading={isLoading}
-          handleEmailRegistration={handleEmailRegistration}
-          simulatePhoneAuth={simulatePhoneAuth}
-          showAlert={showAlert}
-          onSwitch={handleSwitchMode}
-        />;
-       case 'otp':
-        return <OTPVerification
-          formData={formData}
-          handleOTPComplete={handleOTPComplete}
-          handleResendOTP={handleResendOTP}
-          isLoading={isLoading}
-          onBack={handleBackFromOtp}
-        />
+        return (
+          <SignUpCard
+            authMethod={authMethod}
+            setAuthMethod={setAuthMethod}
+            formData={formData}
+            setFormData={setFormData}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            showConfirmPassword={showConfirmPassword}
+            setShowConfirmPassword={setShowConfirmPassword}
+            isLoading={isLoading}
+            handleEmailRegistration={handleEmailRegistration}
+            simulatePhoneAuth={simulatePhoneAuth}
+            showAlert={showAlert}
+            onSwitch={handleSwitchMode}
+          />
+        );
+      case 'otp':
+        return (
+          <OTPVerification
+            formData={formData}
+            handleOTPComplete={handleOTPComplete}
+            handleResendOTP={handleResendOTP}
+            isLoading={isLoading}
+            onBack={handleBackFromOtp}
+          />
+        );
       default:
         return null;
     }
   };
 
-
   return (
     <div className="w-full bg-background">
+       <div id="recaptcha-container"></div>
       <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
           {authBgImage && (

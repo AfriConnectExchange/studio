@@ -7,6 +7,8 @@ import { AnimatedButton } from '../ui/animated-button';
 
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 type Props = any;
 
@@ -21,39 +23,47 @@ export default function SignInCard({
   handleEmailLogin,
   simulatePhoneAuth,
   showAlert,
-  onSwitch
+  onSwitch,
 }: Props) {
   return (
-    <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-      <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">AC</span>
-          </div>
-          <span className="text-2xl font-bold">Africonnect</span>
+    <div className="w-full max-w-md">
+      <div className="bg-card rounded-2xl shadow-xl border border-border p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome Back to Africonnect
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Sign in to access your account
+          </p>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Welcome Back!</h1>
-        <p className="text-sm text-muted-foreground">Sign in to continue your journey</p>
-      </div>
-      <div className="p-8">
-        <div className="flex bg-muted/50 rounded-xl p-1 mb-6">
-          {['email', 'phone'].map((method) => (
-            <button
-              key={method}
-              onClick={() => setAuthMethod(method)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                authMethod === method
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {method === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-              {method === 'email' ? 'Email' : 'Phone'}
-            </button>
-          ))}
+
+        <div className="flex bg-muted rounded-lg p-1 mb-6">
+          <Button
+            variant={authMethod === 'email' ? 'default' : 'ghost'}
+            className="flex-1"
+            onClick={() => setAuthMethod('email')}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Email
+          </Button>
+          <Button
+            variant={authMethod === 'phone' ? 'default' : 'ghost'}
+            className="flex-1"
+            onClick={() => setAuthMethod('phone')}
+          >
+            <Phone className="mr-2 h-4 w-4" />
+            Phone
+          </Button>
         </div>
+
         {authMethod === 'email' ? (
-          <form onSubmit={e => { e.preventDefault(); handleEmailLogin(); }} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEmailLogin();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <div className="relative">
@@ -61,10 +71,12 @@ export default function SignInCard({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="you@example.com"
                   className="pl-10"
                   value={formData.email}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, email: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -75,9 +87,11 @@ export default function SignInCard({
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   value={formData.password}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, password: e.target.value }))
+                  }
                   required
                 />
                 <button
@@ -85,7 +99,11 @@ export default function SignInCard({
                   onClick={() => setShowPassword((v: boolean) => !v)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -100,14 +118,22 @@ export default function SignInCard({
             </AnimatedButton>
           </form>
         ) : (
-          <form onSubmit={e => { e.preventDefault(); simulatePhoneAuth(); }} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              simulatePhoneAuth();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-               <PhoneInput
+              <PhoneInput
                 id="phone"
                 placeholder="Enter phone number"
                 value={formData.phone}
-                onChange={(value) => setFormData((prev: any) => ({ ...prev, phone: value || '' }))}
+                onChange={(value) =>
+                  setFormData((prev: any) => ({ ...prev, phone: value || '' }))
+                }
                 defaultCountry="NG"
                 international
               />
@@ -123,17 +149,22 @@ export default function SignInCard({
             </AnimatedButton>
           </form>
         )}
-        <div className="mt-6 text-center space-y-2">
-          <button
-            onClick={() => showAlert('default', 'Password Reset', 'Password reset link would be sent to your email.')}
-            className="text-sm text-primary hover:underline"
+        <div className="mt-6 text-center text-sm space-y-2">
+          <Link
+            href="/forgot-password"
+            className="text-primary hover:underline"
           >
             Forgot your password?
-          </button>
-          <div className="text-sm mt-4">
+          </Link>
+          <p>
             Don't have an account?{' '}
-            <button onClick={onSwitch} className="text-primary hover:underline font-semibold">Sign up</button>
-          </div>
+            <button
+              onClick={onSwitch}
+              className="text-primary hover:underline font-semibold"
+            >
+              Sign up
+            </button>
+          </p>
         </div>
       </div>
     </div>

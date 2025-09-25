@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Mail, Phone, Eye, EyeOff } from 'lucide-react';
+import { Mail, Phone, Eye, EyeOff, User } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
@@ -8,6 +8,7 @@ import { AnimatedButton } from '../ui/animated-button';
 
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { Button } from '../ui/button';
 
 type Props = any;
 
@@ -24,48 +25,62 @@ export default function SignUpCard({
   handleEmailRegistration,
   simulatePhoneAuth,
   showAlert,
-  onSwitch
+  onSwitch,
 }: Props) {
   return (
-    <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-      <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
-        <div className="flex items-center justify-center gap-2 mb-4">
-           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">AC</span>
-          </div>
-          <span className="text-2xl font-bold">Africonnect</span>
+    <div className="w-full max-w-md">
+      <div className="bg-card rounded-2xl shadow-xl border border-border p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Create an Account with Africonnect
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Join our network and start connecting.
+          </p>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Join Africonnect</h1>
-        <p className="text-sm text-muted-foreground">Connect, trade, and thrive across Africa</p>
-      </div>
-      <div className="p-8">
-        <div className="flex bg-muted/50 rounded-xl p-1 mb-6">
-          {['email', 'phone'].map((method) => (
-            <button
-              key={method}
-              onClick={() => setAuthMethod(method)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                authMethod === method
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {method === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-              {method === 'email' ? 'Email' : 'Phone'}
-            </button>
-          ))}
+
+        <div className="flex bg-muted rounded-lg p-1 mb-6">
+          <Button
+            variant={authMethod === 'email' ? 'default' : 'ghost'}
+            className="flex-1"
+            onClick={() => setAuthMethod('email')}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Email
+          </Button>
+          <Button
+            variant={authMethod === 'phone' ? 'default' : 'ghost'}
+            className="flex-1"
+            onClick={() => setAuthMethod('phone')}
+          >
+            <Phone className="mr-2 h-4 w-4" />
+            Phone
+          </Button>
         </div>
+
         {authMethod === 'email' ? (
-          <form onSubmit={e => { e.preventDefault(); handleEmailRegistration(); }} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEmailRegistration();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={e => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
-                required
-              />
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="name"
+                  placeholder="Enter your full name"
+                  className="pl-10"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, name: e.target.value }))
+                  }
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -74,10 +89,12 @@ export default function SignUpCard({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="you@example.com"
                   className="pl-10"
                   value={formData.email}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, email: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -88,9 +105,11 @@ export default function SignUpCard({
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder="Create a strong password"
                   value={formData.password}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, password: e.target.value }))
+                  }
                   required
                 />
                 <button
@@ -98,7 +117,11 @@ export default function SignUpCard({
                   onClick={() => setShowPassword((v: boolean) => !v)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -110,7 +133,12 @@ export default function SignUpCard({
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
-                  onChange={e => setFormData((prev: any) => ({ ...prev, confirmPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
                   required
                 />
                 <button
@@ -118,7 +146,11 @@ export default function SignUpCard({
                   onClick={() => setShowConfirmPassword((v: boolean) => !v)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -126,10 +158,25 @@ export default function SignUpCard({
               <Checkbox
                 id="terms"
                 checked={formData.acceptTerms}
-                onCheckedChange={checked => setFormData((prev: any) => ({ ...prev, acceptTerms: Boolean(checked) }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    acceptTerms: Boolean(checked),
+                  }))
+                }
               />
-              <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                I agree to the Terms of Service and Privacy Policy
+              <Label
+                htmlFor="terms"
+                className="text-sm text-muted-foreground"
+              >
+                I agree to the{' '}
+                <a href="#" className="underline">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="#" className="underline">
+                  Privacy Policy
+                </a>
               </Label>
             </div>
             <AnimatedButton
@@ -143,16 +190,28 @@ export default function SignUpCard({
             </AnimatedButton>
           </form>
         ) : (
-          <form onSubmit={e => { e.preventDefault(); simulatePhoneAuth(); }} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              simulatePhoneAuth();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="phoneName">Full Name</Label>
-              <Input
-                id="phoneName"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={e => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
-                required
-              />
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="phoneName"
+                  placeholder="Enter your full name"
+                  className="pl-10"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({ ...prev, name: e.target.value }))
+                  }
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
@@ -160,7 +219,9 @@ export default function SignUpCard({
                 id="phone"
                 placeholder="Enter phone number"
                 value={formData.phone}
-                onChange={(value) => setFormData((prev: any) => ({ ...prev, phone: value || '' }))}
+                onChange={(value) =>
+                  setFormData((prev: any) => ({ ...prev, phone: value || '' }))
+                }
                 defaultCountry="NG"
                 international
               />
@@ -169,10 +230,25 @@ export default function SignUpCard({
               <Checkbox
                 id="phoneTerms"
                 checked={formData.acceptTerms}
-                onCheckedChange={checked => setFormData((prev: any) => ({ ...prev, acceptTerms: Boolean(checked) }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    acceptTerms: Boolean(checked),
+                  }))
+                }
               />
-              <Label htmlFor="phoneTerms" className="text-sm text-muted-foreground">
-                I agree to the Terms of Service and Privacy Policy
+              <Label
+                htmlFor="phoneTerms"
+                className="text-sm text-muted-foreground"
+              >
+                I agree to the{' '}
+                <a href="#" className="underline">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="#" className="underline">
+                  Privacy Policy
+                </a>
               </Label>
             </div>
             <AnimatedButton
@@ -186,11 +262,16 @@ export default function SignUpCard({
             </AnimatedButton>
           </form>
         )}
-        <div className="mt-6 text-center space-y-2">
-          <div className="text-sm mt-4">
+        <div className="mt-6 text-center text-sm">
+          <p>
             Already have an account?{' '}
-            <button onClick={onSwitch} className="text-primary hover:underline font-semibold">Sign in</button>
-          </div>
+            <button
+              onClick={onSwitch}
+              className="text-primary hover:underline font-semibold"
+            >
+              Sign in
+            </button>
+          </p>
         </div>
       </div>
     </div>

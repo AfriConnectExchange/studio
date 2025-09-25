@@ -1,27 +1,108 @@
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { UpdateDetailsForm } from './update-details-form';
-import { AccountManagementForm } from './account-management-form';
+'use client';
+import { useState } from 'react';
+import { useFirebase } from '@/firebase';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ProfileSummaryCard } from './profile-summary-card';
+import { PersonalInfoForm } from './personal-info-form';
+import { AccountRoleForm } from './account-role-form';
+import { PreferencesForm } from './preferences-form';
+import { AccountActions } from './account-actions';
+import { useRouter } from 'next/navigation';
 
 export function ProfilePage() {
-  return (
-    <Tabs defaultValue="profile" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 max-w-md">
-        <TabsTrigger value="profile">Profile Details</TabsTrigger>
-        <TabsTrigger value="account">Account</TabsTrigger>
-      </TabsList>
-      <TabsContent value="profile">
-        <UpdateDetailsForm />
-      </TabsContent>
-      <TabsContent value="account">
-        <div className="flex flex-col gap-6">
-          <AccountManagementForm />
+  const { user, isUserLoading } = useFirebase();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('profile');
+  const router = useRouter();
+
+
+  const handleFeedback = (type: 'success' | 'error', message: string) => {
+    if (type === 'success') {
+      setSuccess(message);
+      setError('');
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError(message);
+      setSuccess('');
+    }
+  };
+
+  if (isUserLoading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading profile...</span>
         </div>
-      </TabsContent>
-    </Tabs>
+      </div>
+    );
+  }
+
+  if (!user) {
+     setTimeout(() => router.push('/'), 100);
+     return (
+        <div className="flex h-[400px] items-center justify-center">
+            <div className="flex items-center gap-2">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Redirecting...</span>
+            </div>
+        </div>
+     );
+  }
+  
+  return (
+      <>
+        {error && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {success && (
+          <Alert className="mb-6 bg-green-100 border-green-300 text-green-800 [&>svg]:text-green-800">
+             <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+          <div className="lg:col-span-1 lg:sticky top-24">
+             <ProfileSummaryCard 
+                user={user} 
+                onNavigate={router.push} 
+                setActiveTab={setActiveTab}
+             />
+          </div>
+
+          <div className="lg:col-span-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 max-w-lg mb-6">
+                <TabsTrigger value="profile">Profile</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger value="account">Account</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="profile" className="space-y-6">
+                 <PersonalInfoForm user={user} onFeedback={handleFeedback} />
+                 <AccountRoleForm user={user} onFeedback={handleFeedback} />
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-6">
+                <PreferencesForm user={user} onFeedback={handleFeedback} />
+              </TabsContent>
+
+              <TabsContent value="account" className="space-y-6">
+                <AccountActions onFeedback={handleFeedback} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </>
   );
 }

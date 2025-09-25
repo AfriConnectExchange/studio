@@ -11,7 +11,7 @@ import { EscrowPaymentForm } from '@/components/checkout/payments/EscrowPaymentF
 import { BarterProposalForm } from '@/components/checkout/payments/BarterProposalForm';
 import { PaymentConfirmation } from '@/components/checkout/payments/PaymentConfirmation';
 import { ArrowLeft, ShoppingCart, MapPin, Truck } from 'lucide-react';
-import { PaymentConfirmation as PaymentConfirmationModal } from '@/components/ui/confirmation-modal';
+import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import type { CartItem } from '@/components/cart/cart-page';
 import Image from 'next/image';
 
@@ -62,18 +62,8 @@ export function CheckoutPageComponent({
 
   const handlePaymentSubmit = (data: any) => {
     setPaymentData(data);
-    setShowPaymentConfirm(true);
-  };
-
-  const handlePaymentConfirm = async () => {
-    setIsProcessingPayment(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setShowPaymentConfirm(false);
-    setIsProcessingPayment(false);
     setCurrentStep('confirmation');
-    setTimeout(() => {
-      onUpdateCart([]);
-    }, 2000);
+    onUpdateCart([]); // Clear cart after successful order
   };
 
   const handleBackToPaymentSelection = () => {
@@ -90,34 +80,23 @@ export function CheckoutPageComponent({
       onCancel: handleBackToPaymentSelection,
     };
 
-    switch (selectedPaymentMethod.type) {
+    switch (selectedPaymentMethod.id) {
       case 'cash':
         return <CashOnDeliveryForm {...props} />;
-      case 'online':
-        return (
-          <OnlinePaymentForm
-            {...props}
-            paymentType={
-              selectedPaymentMethod.id === 'card' ? 'card' : 'wallet'
-            }
-          />
-        );
+      case 'card':
+        return <OnlinePaymentForm {...props} paymentType="card" />;
+      case 'wallet':
+        return <OnlinePaymentForm {...props} paymentType="wallet" />;
       case 'escrow':
         return <EscrowPaymentForm {...props} />;
       case 'barter':
         const targetProduct = {
           id: cartItems[0]?.id || 1,
           name: cartItems[0]?.name || 'Product',
-          seller: cartItems[0]?.seller || 'Seller',
+          seller: typeof cartItems[0]?.seller === 'string' ? cartItems[0]?.seller : cartItems[0]?.seller?.name || 'Seller',
           estimatedValue: cartItems[0]?.price || total,
         };
-        return (
-          <BarterProposalForm
-            targetProduct={targetProduct}
-            onConfirm={handlePaymentSubmit}
-            onCancel={handleBackToPaymentSelection}
-          />
-        );
+        return <BarterProposalForm targetProduct={targetProduct} {...props} />;
       default:
         return null;
     }
@@ -149,7 +128,7 @@ export function CheckoutPageComponent({
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{currentStep === 'payment' ? 'Back to Summary' : 'Back to Cart'}</span>
+              <span>{currentStep === 'payment' ? 'Back to Payment Selection' : 'Back to Cart'}</span>
             </Button>
             <h1 className="text-2xl font-bold mt-2">Checkout</h1>
         </div>
@@ -219,6 +198,7 @@ export function CheckoutPageComponent({
                 <PaymentMethodSelector
                   orderTotal={total}
                   onSelectMethod={handlePaymentMethodSelect}
+                  selectedMethod={selectedPaymentMethod?.id}
                 />
               </>
             )}
@@ -293,13 +273,20 @@ export function CheckoutPageComponent({
           </div>
         </div>
 
-        <PaymentConfirmationModal
+        <ConfirmationModal
           isOpen={showPaymentConfirm}
           onClose={() => setShowPaymentConfirm(false)}
-          onConfirm={handlePaymentConfirm}
-          amount={`£${total.toFixed(2)}`}
-          method={selectedPaymentMethod?.name || 'Payment Method'}
-          recipient={typeof cartItems[0]?.seller === 'string' ? cartItems[0]?.seller : cartItems[0]?.seller?.name || 'Seller'}
+          onConfirm={() => {
+            setIsProcessingPayment(true);
+            // Simulate payment processing
+            setTimeout(() => {
+                handlePaymentSubmit(paymentData)
+                setIsProcessingPayment(false);
+                setShowPaymentConfirm(false);
+            }, 2000)
+          }}
+          title="Confirm Payment"
+          description={`Are you sure you want to proceed with the payment of £${total.toFixed(2)}?`}
           isLoading={isProcessingPayment}
           type="warning"
         />

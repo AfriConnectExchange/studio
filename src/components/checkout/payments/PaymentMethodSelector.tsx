@@ -1,101 +1,164 @@
 'use client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  CreditCard,
-  Banknote,
-  ShieldCheck,
-  Repeat,
-  Wallet,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Check, CreditCard, Shield, Handshake, Truck } from 'lucide-react';
+import { ApplePayLogo, FlutterwaveLogo, GooglePayLogo, PayPalLogo, StripeLogo } from './PaymentLogos';
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: 'cash' | 'online_card' | 'online_wallet' | 'escrow' | 'barter';
+  icon: React.ReactNode;
+  description: string;
+  ranking: number;
+  recommended?: boolean;
+  maxAmount?: number;
+  processingTime: string;
+  fees: string;
+}
 
 interface PaymentMethodSelectorProps {
   orderTotal: number;
-  onSelectMethod: (method: any) => void;
+  onSelectMethod: (method: PaymentMethod) => void;
+  selectedMethod?: string;
 }
 
-const paymentMethods = [
-  {
-    id: 'card',
-    name: 'Credit/Debit Card',
-    description: 'Pay securely with your card.',
-    icon: CreditCard,
-    type: 'online',
-    tags: ['Secure', 'Instant'],
-  },
-  {
-    id: 'wallet',
-    name: 'AfriConnect Wallet',
-    description: 'Use your wallet balance.',
-    icon: Wallet,
-    type: 'online',
-    tags: ['Fast', 'No Fees'],
-  },
-  {
-    id: 'cod',
-    name: 'Cash on Delivery',
-    description: 'Pay when your order arrives.',
-    icon: Banknote,
-    type: 'cash',
-    tags: ['Pay Later'],
-  },
-  {
-    id: 'escrow',
-    name: 'Secure Escrow',
-    description: 'Payment held until delivery confirmed.',
-    icon: ShieldCheck,
-    type: 'escrow',
-    tags: ['Buyer Protection'],
-  },
-  {
-    id: 'barter',
-    name: 'Barter/Trade',
-    description: 'Propose a trade with the seller.',
-    icon: Repeat,
-    type: 'barter',
-    tags: ['Trade Goods'],
-  },
-];
+export function PaymentMethodSelector({ orderTotal, onSelectMethod, selectedMethod }: PaymentMethodSelectorProps) {
+  const [methods] = useState<PaymentMethod[]>([
+    {
+      id: 'escrow',
+      name: 'Escrow Payment',
+      type: 'escrow',
+      icon: <Shield className="w-5 h-5" />,
+      description: 'Secure payment held until delivery confirmed',
+      ranking: 1,
+      recommended: true,
+      processingTime: 'Instant',
+      fees: '2.5% + £0.30'
+    },
+    {
+      id: 'card',
+      name: 'Card Payment',
+      type: 'online_card',
+      icon: <CreditCard className="w-5 h-5" />,
+      description: 'Visa, Mastercard, etc. via Stripe',
+      ranking: 2,
+      processingTime: 'Instant',
+      fees: '2.9% + £0.30'
+    },
+    {
+      id: 'wallet',
+      name: 'Digital Wallet',
+      type: 'online_wallet',
+      icon: <div className="flex items-center gap-1"><PayPalLogo className="h-4" /><ApplePayLogo className="h-6" /><GooglePayLogo className="h-6" /></div>,
+      description: 'PayPal, Apple Pay, Google Pay',
+      ranking: 3,
+      processingTime: 'Instant',
+      fees: 'Varies'
+    },
+     {
+      id: 'flutterwave',
+      name: 'Flutterwave',
+      type: 'online_wallet',
+      icon: <FlutterwaveLogo className="h-5" />,
+      description: 'Mobile money, bank transfer, and more',
+      ranking: 4,
+      processingTime: 'Instant',
+      fees: 'Varies'
+    },
+    {
+      id: 'cash',
+      name: 'Cash on Delivery',
+      type: 'cash',
+      icon: <Truck className="w-5 h-5" />,
+      description: 'Pay when you receive your order',
+      ranking: 5,
+      maxAmount: 1000,
+      processingTime: 'On delivery',
+      fees: 'Free'
+    },
+    {
+      id: 'barter',
+      name: 'Barter Exchange',
+      type: 'barter',
+      icon: <Handshake className="w-5 h-5" />,
+      description: 'Exchange goods or services',
+      ranking: 6,
+      processingTime: 'By agreement',
+      fees: 'Free'
+    }
+  ]);
 
-export function PaymentMethodSelector({
-  orderTotal,
-  onSelectMethod,
-}: PaymentMethodSelectorProps) {
+  const availableMethods = methods.filter(method => {
+    if (method.type === 'cash' && orderTotal > (method.maxAmount || Infinity)) {
+      return false;
+    }
+    return true;
+  });
+
+  const sortedMethods = availableMethods.sort((a, b) => a.ranking - b.ranking);
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Choose Payment Method</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {paymentMethods.map((method) => (
-          <div
-            key={method.id}
-            className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between"
-            onClick={() => onSelectMethod(method)}
-          >
-            <div className="flex items-start gap-4">
-              <method.icon className="w-8 h-8 text-primary mt-1" />
-              <div>
-                <h4 className="font-semibold">{method.name}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {method.description}
-                </p>
-                <div className="flex items-center gap-2 mt-2">
-                  {method.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
+        <CardHeader>
+            <CardTitle>Choose Payment Method</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+            {sortedMethods.map((method, index) => (
+            <Card 
+                key={method.id}
+                className={`cursor-pointer transition-all duration-200 ${
+                selectedMethod === method.id 
+                    ? 'ring-2 ring-primary border-primary' 
+                    : 'hover:border-primary/50'
+                }`}
+                onClick={() => onSelectMethod(method)}
+            >
+                <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                    <div className={`p-2 rounded-lg ${
+                        method.type === 'escrow' ? 'bg-green-100 text-green-600' :
+                        method.type.startsWith('online') ? 'bg-blue-100 text-blue-600' :
+                        method.type === 'cash' ? 'bg-orange-100 text-orange-600' :
+                        'bg-purple-100 text-purple-600'
+                    }`}>
+                        {method.icon}
+                    </div>
+                    
+                    <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                        <span className="font-medium">{method.name}</span>
+                        {method.recommended && (
+                            <Badge variant="default" className="text-xs h-5">
+                            Recommended
+                            </Badge>
+                        )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                        {method.description}
+                        </p>
+                        <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                        <span>Processing: {method.processingTime}</span>
+                        <span>Fees: {method.fees}</span>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                    {selectedMethod === method.id && (
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="w-3 h-3 text-primary-foreground" />
+                        </div>
+                    )}
+                    </div>
                 </div>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="mt-4 sm:mt-0 ml-auto sm:ml-4">
-              Select
-            </Button>
-          </div>
-        ))}
-      </CardContent>
+                </CardContent>
+            </Card>
+            ))}
+        </CardContent>
     </Card>
   );
 }

@@ -30,7 +30,9 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
-          {children}
+          <div className="container mx-auto px-4">
+            {children}
+          </div>
         </FirebaseClientProvider>
         <Toaster />
       </body>

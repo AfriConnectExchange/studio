@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, Star, Heart, Share2, ShoppingCart, Shield, Truck, RotateCcw, MessageCircle, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Star, Heart, Share2, ShoppingCart, Shield, Truck, RotateCcw, MessageCircle, Plus, Minus, Info, Ship, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,9 +31,9 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
     sold: 89,
     description: "This authentic Kente cloth is hand-woven by skilled artisans in Kumasi, Ghana. Each piece tells a story through its intricate patterns and vibrant colors. Made from high-quality cotton and silk blend, this traditional textile is perfect for special occasions, cultural celebrations, or as a stunning decorative piece.",
     images: [
-      "https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080"
+      "https://images.unsplash.com/photo-1692689383138-c2df3476072c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w7Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwbWFya2V0cGxhY2UlMjBjb2xvcmZ1bCUyMHByb2R1Y3RzfGVufDF8fHx8MTc1ODEyMTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwZmFzaGlvbnxlbnwxfHx8fDE3NTgxMjE0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwY3JhZnRzfGVufDF8fHx8MTc1ODEyMTQ4MHww&ixlib=rb-4.1.0&q=80&w=1080"
     ],
     seller: {
       name: "Accra Crafts",
@@ -41,7 +41,7 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
       rating: 4.9,
       totalSales: 2456,
       memberSince: "2020",
-      avatar: "https://images.unsplash.com/photo-1655720357872-ce227e4164ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwd29tYW4lMjBlbnRyZXByZW5ldXIlMjBidXNpbmVzc3xlbnwxfHx8fDE3NTgxMjE0Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      avatar: "https://images.unsplash.com/photo-1655720357872-ce227e4164ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzc8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwd29tYW4lMjBlbnRyZXByZW5ldXIlMjBidXNpbmVzc3xlbnwxfHx8fDE3NTgxMjE0Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       location: "Accra, Ghana"
     },
     specifications: {
@@ -115,7 +115,7 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+            <div className="aspect-square overflow-hidden rounded-2xl shadow-lg bg-muted">
             <Image
               src={product.images[selectedImageIndex]}
               alt={product.name}
@@ -129,7 +129,7 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
               <button
                 key={index}
                 onClick={() => setSelectedImageIndex(index)}
-                className={`aspect-square overflow-hidden rounded-md border-2 transition-colors ${
+                className={`aspect-square overflow-hidden rounded-xl border-2 transition-colors ${
                   selectedImageIndex === index ? 'border-primary' : 'border-transparent hover:border-primary/50'
                 }`}>
                 <Image
@@ -258,10 +258,19 @@ export function ProductPageComponent({ productId, onNavigate, onAddToCart }: Pro
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         <div className="lg:col-span-2">
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 text-xs">
-              <TabsTrigger value="details">Product Details</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
-              <TabsTrigger value="shipping">Shipping Info</TabsTrigger>
+            <TabsList className="bg-transparent p-0 h-auto justify-start border-b rounded-none gap-4">
+              <TabsTrigger value="details" className="text-xs sm:text-sm data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 gap-2">
+                <Info className="w-4 h-4" />
+                Product Details
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="text-xs sm:text-sm data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Reviews ({product.reviews})
+              </TabsTrigger>
+              <TabsTrigger value="shipping" className="text-xs sm:text-sm data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 gap-2">
+                <Ship className="w-4 h-4" />
+                Shipping Info
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4 pt-4">

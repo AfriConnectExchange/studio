@@ -83,22 +83,24 @@ export function ProfilePage() {
 
           <div className="lg:col-span-3">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-lg mb-6">
-                <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-                <TabsTrigger value="account">Account</TabsTrigger>
-              </TabsList>
+              <div className="lg:hidden">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg mb-6">
+                  <TabsTrigger value="profile">Profile</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                  <TabsTrigger value="account">Account</TabsTrigger>
+                </TabsList>
+              </div>
 
-              <TabsContent value="profile" className="space-y-6">
+              <TabsContent value="profile" className="space-y-6 mt-0">
                  <PersonalInfoForm user={user} onFeedback={handleFeedback} />
                  <AccountRoleForm user={user} onFeedback={handleFeedback} />
               </TabsContent>
 
-              <TabsContent value="settings" className="space-y-6">
+              <TabsContent value="settings" className="space-y-6 mt-0">
                 <PreferencesForm user={user} onFeedback={handleFeedback} />
               </TabsContent>
 
-              <TabsContent value="account" className="space-y-6">
+              <TabsContent value="account" className="space-y-6 mt-0">
                 <AccountActions onFeedback={handleFeedback} />
               </TabsContent>
             </Tabs>

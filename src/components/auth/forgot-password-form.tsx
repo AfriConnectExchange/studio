@@ -21,6 +21,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Mail } from 'lucide-react';
+import { useFirebase } from '@/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { useState } from 'react';
+import { AnimatedButton } from '../ui/animated-button';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -28,19 +32,50 @@ const formSchema = z.object({
 
 export function ForgotPasswordForm() {
   const { toast } = useToast();
+  const { auth } = useFirebase();
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '' },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: 'Password Reset Link Sent',
-      description:
-        'If an account exists for this email, you will receive a password reset link.',
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, values.email);
+      toast({
+        title: 'Password Reset Link Sent',
+        description:
+          'If an account exists for this email, you will receive a password reset link.',
+      });
+      setEmailSent(true);
+    } catch (error: any) {
+       toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not send password reset email. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if(emailSent) {
+    return (
+       <Card>
+        <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+                 <MailCheck className="w-16 h-16 text-green-500" />
+            </div>
+            <CardTitle>Check Your Email</CardTitle>
+            <CardDescription>
+                A password reset link has been sent to <strong>{form.getValues('email')}</strong>. Please check your inbox.
+            </CardDescription>
+        </CardHeader>
+       </Card>
+    )
   }
 
   return (
@@ -74,12 +109,15 @@ export function ForgotPasswordForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
+            <AnimatedButton type="submit" className="w-full" isLoading={isLoading}>
               Send Reset Link
-            </Button>
+            </AnimatedButton>
           </form>
         </Form>
       </CardContent>
     </Card>
   );
 }
+
+// Add MailCheck icon for the success state, needs to be imported
+import { MailCheck } from 'lucide-react';

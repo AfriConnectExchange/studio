@@ -65,26 +65,40 @@ export default function Home() {
         if (userProfile && userProfile.onboardingCompleted) {
           router.push('/dashboard');
         } else {
-          router.push('/onboarding');
+           // This check prevents redirecting if we are already on a public page and no user document exists yet.
+          if (userProfile !== undefined) {
+             router.push('/onboarding');
+          }
         }
       }
     }
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
 
-  // This effect will run when the user's auth state changes.
+  // This effect will run to check for email verification status.
   useEffect(() => {
-    if (authMode === 'check-email' && user) {
-      user.reload().then(() => {
-        if (user.emailVerified) {
+    let intervalId: NodeJS.Timeout;
+
+    if (user && !user.emailVerified && authMode === 'check-email') {
+      intervalId = setInterval(async () => {
+        await user.reload();
+        const freshUser = auth.currentUser;
+        if (freshUser?.emailVerified) {
+          clearInterval(intervalId);
           toast({
             title: 'Email Verified!',
             description: 'Redirecting to complete your profile...',
           });
-          // Redirection is handled by the main effect above
+          // The main useEffect will handle the redirection.
         }
-      });
+      }, 5000); // Check every 5 seconds
     }
-  }, [user, authMode, toast]);
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [user, auth, authMode, toast]);
 
 
   const authBgImage = PlaceHolderImages.find(
@@ -130,10 +144,11 @@ export default function Home() {
       phoneNumber: user.phoneNumber,
       accountStatus: 'Active',
       freeAccessExpiryDate: threeMonthsFromNow.toISOString(),
-      onboardingCompleted: false, // <-- Add onboarding status
+      onboardingCompleted: false,
       ...extraData,
     };
     
+    // This write is non-blocking and will handle its own errors.
     setDocumentNonBlocking(userRef, userData, { merge: true });
   }
 
@@ -245,7 +260,7 @@ export default function Home() {
   };
 
   const renderAuthCard = () => {
-    if (isUserLoading || isProfileLoading && user) {
+    if (isUserLoading || (isProfileLoading && user)) {
       return (
          <div className="flex flex-col items-center justify-center space-y-4 h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>

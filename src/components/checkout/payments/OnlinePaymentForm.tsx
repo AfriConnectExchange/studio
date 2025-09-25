@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CreditCard, Wallet, Shield, Lock, AlertTriangle } from 'lucide-react';
-import { ApplePayLogo, GooglePayLogo, PayPalLogo, StripeLogo } from './PaymentLogos';
+import Image from 'next/image';
 
 interface OnlinePaymentFormProps {
   orderTotal: number;
@@ -44,9 +44,9 @@ export function OnlinePaymentForm({ orderTotal, paymentType, onConfirm, onCancel
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const walletProviders = [
-    { id: 'paypal', name: 'PayPal', icon: <PayPalLogo className="h-6" /> },
-    { id: 'applepay', name: 'Apple Pay', icon: <ApplePayLogo className="h-8" /> },
-    { id: 'googlepay', name: 'Google Pay', icon: <GooglePayLogo className="h-8" /> }
+    { id: 'paypal', name: 'PayPal', icon: <Image src="/paypal.svg" alt="PayPal" width={60} height={20} /> },
+    { id: 'applepay', name: 'Apple Pay', icon: <Image src="/apple-pay.svg" alt="Apple Pay" width={50} height={20} /> },
+    { id: 'googlepay', name: 'Google Pay', icon: <Image src="/google-pay.svg" alt="Google Pay" width={50} height={20} /> }
   ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -193,9 +193,9 @@ export function OnlinePaymentForm({ orderTotal, paymentType, onConfirm, onCancel
         {/* Payment Form */}
         {paymentType === 'card' ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-end gap-2">
-                <StripeLogo className="h-6" />
-                <PayPalLogo className="h-6" />
+            <div className="flex items-center justify-end gap-2 h-6">
+                <Image src="/stripe.svg" alt="Stripe" width={50} height={20}/>
+                <Image src="/paypal.svg" alt="PayPal" width={60} height={20}/>
             </div>
             <div>
               <Label htmlFor="cardNumber">Card Number *</Label>

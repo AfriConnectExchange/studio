@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, CreditCard, Shield, Handshake, Truck } from 'lucide-react';
-import { ApplePayLogo, FlutterwaveLogo, GooglePayLogo, PayPalLogo, StripeLogo } from './PaymentLogos';
+import Image from 'next/image';
 
 interface PaymentMethod {
   id: string;
@@ -52,7 +52,11 @@ export function PaymentMethodSelector({ orderTotal, onSelectMethod, selectedMeth
       id: 'wallet',
       name: 'Digital Wallet',
       type: 'online_wallet',
-      icon: <div className="flex items-center gap-1"><PayPalLogo className="h-4" /><ApplePayLogo className="h-6" /><GooglePayLogo className="h-6" /></div>,
+      icon: <div className="flex items-center gap-2 h-6">
+              <Image src="/paypal.svg" alt="PayPal" width={60} height={15} />
+              <Image src="/apple-pay.svg" alt="Apple Pay" width={40} height={15} />
+              <Image src="/google-pay.svg" alt="Google Pay" width={40} height={15} />
+            </div>,
       description: 'PayPal, Apple Pay, Google Pay',
       ranking: 3,
       processingTime: 'Instant',
@@ -62,7 +66,7 @@ export function PaymentMethodSelector({ orderTotal, onSelectMethod, selectedMeth
       id: 'flutterwave',
       name: 'Flutterwave',
       type: 'online_wallet',
-      icon: <FlutterwaveLogo className="h-5" />,
+      icon: <Image src="/flutterwave.svg" alt="Flutterwave" width={100} height={20} />,
       description: 'Mobile money, bank transfer, and more',
       ranking: 4,
       processingTime: 'Instant',
@@ -119,13 +123,17 @@ export function PaymentMethodSelector({ orderTotal, onSelectMethod, selectedMeth
                 <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${
+                    <div className={`p-2 rounded-lg flex items-center justify-center ${
                         method.type === 'escrow' ? 'bg-green-100 text-green-600' :
                         method.type.startsWith('online') ? 'bg-blue-100 text-blue-600' :
                         method.type === 'cash' ? 'bg-orange-100 text-orange-600' :
                         'bg-purple-100 text-purple-600'
                     }`}>
-                        {method.icon}
+                        {method.id === 'wallet' || method.id === 'flutterwave' ? (
+                            <div className="h-5 w-auto flex items-center">{method.icon}</div>
+                        ) : (
+                            method.icon
+                        )}
                     </div>
                     
                     <div className="flex-1">

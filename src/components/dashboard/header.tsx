@@ -63,7 +63,9 @@ export function Header() {
               </SheetContent>
             </Sheet>
           </div>
-          <UserNav />
+          <div data-tour="profile">
+            <UserNav />
+          </div>
         </div>
       </div>
     </header>

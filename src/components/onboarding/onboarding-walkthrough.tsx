@@ -21,7 +21,6 @@ interface WalkthroughStep {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  target?: string; // CSS selector for highlighting
   position: 'center' | 'top' | 'bottom' | 'left' | 'right';
   action?: {
     label: string;
@@ -42,41 +41,14 @@ const walkthroughSteps: WalkthroughStep[] = [
     position: 'center'
   },
   {
-    id: 'search',
-    title: 'Discover Amazing Products',
-    description: 'Use our powerful search to find authentic African products from verified sellers across the continent.',
+    id: 'revenue',
+    title: 'Track Your Performance',
+    description: 'Get a quick overview of your total revenue and other key metrics right from your dashboard.',
     icon: Search,
     position: 'top',
-    action: {
-      label: 'Explore Marketplace',
-      page: 'marketplace'
-    },
     highlight: {
-      element: '[data-tour="search"]',
-      offset: { x: 0, y: 60 }
+      element: '[data-tour="revenue"]',
     }
-  },
-  {
-    id: 'cart',
-    title: 'Easy Shopping Experience',
-    description: 'Add products to your cart with one click. We support multiple payment methods including escrow for your security.',
-    icon: ShoppingCart,
-    position: 'top',
-    action: {
-      label: 'View Cart',
-      page: 'cart'
-    },
-    highlight: {
-      element: '[data-tour="cart"]',
-      offset: { x: 0, y: 60 }
-    }
-  },
-  {
-    id: 'payments',
-    title: 'Secure Payment Options',
-    description: 'Choose from cash on delivery, online payments, or our secure escrow system for complete peace of mind.',
-    icon: CreditCard,
-    position: 'center'
   },
   {
     id: 'profile',
@@ -93,36 +65,7 @@ const walkthroughSteps: WalkthroughStep[] = [
       offset: { x: -120, y: 60 }
     }
   },
-  {
-    id: 'learning',
-    title: 'Learn New Skills',
-    description: 'Access courses from African experts to grow your business and develop new skills.',
-    icon: BookOpen,
-    position: 'center',
-    action: {
-      label: 'Browse Courses',
-      page: 'courses'
-    }
-  },
-  {
-    id: 'tracking',
-    title: 'Track Your Orders',
-    description: 'Get real-time updates on your orders with our integrated tracking system.',
-    icon: Truck,
-    position: 'center',
-    action: {
-      label: 'Track Orders',
-      page: 'tracking'
-    }
-  },
-  {
-    id: 'security',
-    title: 'Trust & Security',
-    description: 'All sellers are verified through KYC, and we use secure escrow payments to protect your purchases.',
-    icon: Shield,
-    position: 'center'
-  },
-  {
+    {
     id: 'notifications',
     title: 'Stay Updated',
     description: 'Get notified about order updates, new products, and special offers from your favorite sellers.',
@@ -130,9 +73,22 @@ const walkthroughSteps: WalkthroughStep[] = [
     position: 'top',
     highlight: {
       element: '[data-tour="notifications"]',
-      offset: { x: -60, y: 60 }
     }
-  }
+  },
+  {
+    id: 'search',
+    title: 'Discover Amazing Products',
+    description: 'Use our powerful search to find authentic African products from verified sellers across the continent.',
+    icon: Search,
+    position: 'bottom',
+    action: {
+      label: 'Explore Marketplace',
+      page: 'marketplace'
+    },
+    highlight: {
+      element: '[data-tour="search"]',
+    }
+  },
 ];
 
 export function OnboardingWalkthrough({ 
@@ -143,14 +99,29 @@ export function OnboardingWalkthrough({
 }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [highlightedElementRect, setHighlightedElementRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-      // Scroll to top when walkthrough starts
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [isOpen]);
+  
+  const currentStepData = walkthroughSteps[currentStep];
+
+  useEffect(() => {
+    if (isOpen && currentStepData.highlight) {
+      const element = document.querySelector(currentStepData.highlight.element);
+      if (element) {
+        setHighlightedElementRect(element.getBoundingClientRect());
+      } else {
+        setHighlightedElementRect(null);
+      }
+    } else {
+       setHighlightedElementRect(null);
+    }
+  }, [isOpen, currentStep, currentStepData.highlight]);
 
   const handleNext = () => {
     if (currentStep < walkthroughSteps.length - 1) {
@@ -170,16 +141,13 @@ export function OnboardingWalkthrough({
     setIsVisible(false);
     setTimeout(() => {
       onComplete();
-      onClose();
     }, 300);
   };
-
+  
   const handleSkip = () => {
     setIsVisible(false);
     setTimeout(() => {
-      // We still call onComplete when skipping to mark it as done
       onComplete();
-      onClose();
     }, 300);
   };
 
@@ -187,9 +155,50 @@ export function OnboardingWalkthrough({
     handleComplete();
     onNavigate(action.page);
   };
+  
+  const getModalPosition = () => {
+    if (!highlightedElementRect) {
+      return {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      };
+    }
 
-  const currentStepData = walkthroughSteps[currentStep];
-  const progress = ((currentStep + 1) / walkthroughSteps.length) * 100;
+    const modalWidth = 384; // w-96
+    const modalHeight = 350; // approximate height
+    const offset = 20;
+
+    let top, left;
+
+    switch (currentStepData.position) {
+      case 'bottom':
+        top = highlightedElementRect.bottom + offset;
+        left = highlightedElementRect.left + highlightedElementRect.width / 2 - modalWidth / 2;
+        break;
+      case 'top':
+        top = highlightedElementRect.top - modalHeight - offset;
+        left = highlightedElementRect.left + highlightedElementRect.width / 2 - modalWidth / 2;
+        break;
+      case 'left':
+        top = highlightedElementRect.top + highlightedElementRect.height / 2 - modalHeight / 2;
+        left = highlightedElementRect.left - modalWidth - offset;
+        break;
+      case 'right':
+        top = highlightedElementRect.top + highlightedElementRect.height / 2 - modalHeight / 2;
+        left = highlightedElementRect.right + offset;
+        break;
+      default: // center
+        return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+    }
+    
+    // Clamp values to be within viewport
+    left = Math.max(offset, Math.min(left, window.innerWidth - modalWidth - offset));
+    top = Math.max(offset, Math.min(top, window.innerHeight - modalHeight - offset));
+
+
+    return { top: `${top}px`, left: `${left}px` };
+  };
 
   if (!isOpen) return null;
 
@@ -202,36 +211,18 @@ export function OnboardingWalkthrough({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm"
             onClick={handleSkip}
           />
-
-          {/* Highlight Effect (simplified for now) */}
-          {currentStepData.highlight && (
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 pointer-events-none"
-            >
-              {/* This part would need a more robust solution to dynamically get element positions */}
-            </motion.div>
-          )}
-
+          
           {/* Walkthrough Modal */}
           <motion.div
             key={currentStepData.id}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className={`fixed z-50 ${
-              currentStepData.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' :
-              currentStepData.position === 'top' ? 'top-32 left-1/2 -translate-x-1/2' :
-              currentStepData.position === 'bottom' ? 'bottom-32 left-1/2 -translate-x-1/2' :
-              currentStepData.position === 'left' ? 'top-1/2 left-8 -translate-y-1/2' :
-              'top-1/2 right-8 -translate-y-1/2'
-            }`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={getModalPosition()}
+            className="fixed z-[101]"
           >
             <Card className="w-80 sm:w-96 max-w-[calc(100vw-2rem)] shadow-2xl border-2">
               <CardContent className="p-0">
@@ -330,7 +321,7 @@ export function OnboardingWalkthrough({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[101]"
           >
             <div className="bg-background/90 backdrop-blur-sm border rounded-full px-4 py-2 shadow-lg">
               <div className="flex items-center gap-2">

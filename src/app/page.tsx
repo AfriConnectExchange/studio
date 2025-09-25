@@ -15,7 +15,8 @@ import {
   useFirebase,
 } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { Auth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber } from 'firebase/auth';
+import CheckEmailCard from '@/components/auth/CheckEmailCard';
 
 declare global {
   interface Window {
@@ -25,7 +26,7 @@ declare global {
 }
 
 export default function Home() {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'otp'>(
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'otp' | 'check-email'>(
     'signin'
   );
   const [authMethod, setAuthMethod] = useState('email');
@@ -49,7 +50,9 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      if (user.emailVerified || user.phoneNumber) {
+        router.push('/dashboard');
+      }
     }
   }, [user, router]);
 
@@ -67,23 +70,39 @@ export default function Home() {
 
   const handleSwitchMode = () => {
     setAuthMode((prev) => (prev === 'signin' ? 'signup' : 'signin'));
+    setFormData((prev) => ({
+      ...prev,
+      password: '',
+      confirmPassword: '',
+      otp: '',
+    }));
   };
+
+  const handleBackToSignIn = () => {
+    setAuthMode('signin');
+  }
 
   const handleBackFromOtp = () => {
     setAuthMode(authMethod === 'email' ? 'signin' : 'signup');
   };
 
-  const handleEmailLogin = () => {
+  const handleEmailLogin = async () => {
     setIsLoading(true);
-    initiateEmailSignIn(auth, formData.email, formData.password);
-    // The auth state change will be handled by the useFirebase hook and the useEffect above.
-    // We can add error handling for login failures here.
-    // For now, we'll optimistically assume success and let the listener handle redirects.
-    // A real app should handle the promise rejection from signInWithEmailAndPassword.
-    setTimeout(() => setIsLoading(false), 2000); // Simulate loading for feedback
+    try {
+      const userCredential = await initiateEmailSignIn(auth, formData.email, formData.password);
+      if (userCredential.user && !userCredential.user.emailVerified) {
+        showAlert('destructive', 'Verification Needed', 'Please verify your email before logging in.');
+        await sendEmailVerification(userCredential.user);
+        setAuthMode('check-email');
+      }
+    } catch (error: any) {
+      showAlert('destructive', 'Login Failed', 'Incorrect email or password.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEmailRegistration = () => {
+  const handleEmailRegistration = async () => {
     if (formData.password !== formData.confirmPassword) {
       showAlert('destructive', 'Error', 'Passwords do not match.');
       return;
@@ -97,30 +116,43 @@ export default function Home() {
       return;
     }
     setIsLoading(true);
-    initiateEmailSignUp(auth, formData.email, formData.password);
-    // Similar to login, success is handled by the auth state listener.
-    // Error handling should be added for production.
-    showAlert(
-      'default',
-      'Registration Success',
-      'Please check your email to verify your account.'
-    );
-    setTimeout(() => setIsLoading(false), 2000);
+    try {
+      const userCredential = await initiateEmailSignUp(auth, formData.email, formData.password);
+      if (userCredential && userCredential.user) {
+        await sendEmailVerification(userCredential.user);
+        setAuthMode('check-email');
+      }
+    } catch (error: any)
+    {
+      if (error.code === 'auth/email-already-in-use') {
+        showAlert('destructive', 'Registration Failed', 'This email is already registered. Please log in.');
+      } else {
+        showAlert('destructive', 'Registration Failed', 'An error occurred during registration.');
+      }
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const setupRecaptcha = (auth: Auth) => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        },
+        callback: (response: any) => {},
       });
     }
     return window.recaptchaVerifier;
   };
   
   const simulatePhoneAuth = async () => {
+    if (!formData.acceptTerms && authMode === 'signup') {
+       showAlert(
+        'destructive',
+        'Error',
+        'You must accept the terms and conditions.'
+      );
+      return;
+    }
     setIsLoading(true);
     try {
       const appVerifier = setupRecaptcha(auth);
@@ -138,10 +170,10 @@ export default function Home() {
     setIsLoading(true);
     try {
       if (window.confirmationResult) {
-        const result = await window.confirmationResult.confirm(otp);
-        const user = result.user;
-        showAlert('default', 'Success', 'Phone number verified successfully!');
-        router.push('/dashboard');
+        await window.confirmationResult.confirm(otp);
+        // The onAuthStateChanged listener in useFirebase will handle the redirect
+      } else {
+        throw new Error("No confirmation result found.");
       }
     } catch (error: any) {
       showAlert('destructive', 'Error', 'Invalid OTP. Please try again.');
@@ -151,13 +183,13 @@ export default function Home() {
   };
 
 
-  const handleResendOTP = () => {
+  const handleResendOTP = async () => {
     showAlert('default', 'OTP Resent', 'A new OTP has been sent to your phone.');
-    simulatePhoneAuth();
+    await simulatePhoneAuth();
   };
 
   const renderAuthCard = () => {
-    if (isUserLoading || user) {
+    if (isUserLoading) {
       return (
          <div className="flex flex-col items-center justify-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -209,6 +241,13 @@ export default function Home() {
             handleResendOTP={handleResendOTP}
             isLoading={isLoading}
             onBack={handleBackFromOtp}
+          />
+        );
+      case 'check-email':
+        return (
+          <CheckEmailCard
+            email={formData.email}
+            onBack={handleBackToSignIn}
           />
         );
       default:

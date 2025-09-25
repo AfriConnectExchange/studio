@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Africonnectexchange',
+  title: 'Africonnect',
   description: 'Connecting Africa, one exchange at a time.',
 };
 

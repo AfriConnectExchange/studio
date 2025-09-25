@@ -65,7 +65,7 @@ export function Logo({
       </svg>
       {withText && (
         <h1 className="text-2xl font-bold tracking-tight text-white font-headline">
-          Africonnectexchange
+          Africonnect
         </h1>
       )}
     </div>

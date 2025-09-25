@@ -160,7 +160,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-zinc-900/60" />
           <div className="relative z-20 flex items-center text-lg font-medium">
             <Logo withText={false} />
-            <span className="ml-2">Africonnectexchange</span>
+            <span className="ml-2">Africonnect</span>
           </div>
           <div className="relative z-20 mt-auto">
             <blockquote className="space-y-2">

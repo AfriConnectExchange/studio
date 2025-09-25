@@ -13,7 +13,7 @@ export function Header() {
           <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
             <Logo withText={false} />
             <span className="hidden font-bold sm:inline-block">
-              Africonnectexchange
+              Africonnect
             </span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm md:flex">
@@ -48,7 +48,7 @@ export function Header() {
                     className="flex items-center gap-2 text-lg font-semibold"
                   >
                     <Logo withText={false} />
-                    <span className="sr-only">Africonnectexchange</span>
+                    <span className="sr-only">Africonnect</span>
                   </Link>
                   <Link href="/dashboard" className="hover:text-foreground">
                     Dashboard

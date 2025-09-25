@@ -31,11 +31,11 @@ export default function SignUpCard({
       <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
         <div className="flex items-center justify-center gap-2 mb-4">
            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">AE</span>
+            <span className="text-primary-foreground font-bold text-lg">AC</span>
           </div>
-          <span className="text-2xl font-bold">Africonnectexchange</span>
+          <span className="text-2xl font-bold">Africonnect</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Join Africonnectexchange</h1>
+        <h1 className="text-xl font-semibold mb-2">Join Africonnect</h1>
         <p className="text-sm text-muted-foreground">Connect, trade, and thrive across Africa</p>
       </div>
       <div className="p-8">
@@ -69,14 +69,18 @@ export default function SignUpCard({
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={e => setFormData((prev: any) => ({ ...prev, email: e.target.value }))}
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className="pl-10"
+                  value={formData.email}
+                  onChange={e => setFormData((prev: any) => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

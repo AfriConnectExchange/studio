@@ -9,6 +9,7 @@ import {
   Bell,
   TrendingUp,
   HelpCircle,
+  Gift,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +56,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
     { id: '/reviews', label: 'Reviews', href: '/reviews' },
     { id: '/admin', label: 'Admin Panel', href: '/admin' },
     { id: '/help', label: 'Help Center', href: '/help', icon: HelpCircle },
-    { id: '/support', label: 'Support', href: '/support' },
+    { id: '/support', label: 'Support', href: '/support', icon: HelpCircle },
   ];
 
   const handleMobileLinkClick = () => {

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { AnimatedButton } from '../ui/animated-button';
 import { Textarea } from '../ui/textarea';
 import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters.'),

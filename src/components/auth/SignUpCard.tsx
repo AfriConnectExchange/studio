@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { Mail, Eye, EyeOff, User } from 'lucide-react';
@@ -29,25 +30,25 @@ export default function SignUpCard({
 }: Props) {
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-      <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
-        <div className="flex items-center justify-center gap-2 mb-4">
+      <div className="p-6 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
+        <div className="flex items-center justify-center gap-2 mb-3">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">AE</span>
           </div>
           <span className="text-2xl font-bold">AfriConnect Exchange</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2">Join AfriConnect Exchange</h1>
+        <h1 className="text-xl font-semibold mb-1">Join AfriConnect Exchange</h1>
         <p className="text-sm text-muted-foreground">
           Connect, trade, and thrive
         </p>
       </div>
-      <div className="p-8">
-        <Button variant="outline" className="w-full mb-6" onClick={handleGoogleLogin} disabled={isLoading}>
+      <div className="p-6">
+        <Button variant="outline" className="w-full mb-4" onClick={handleGoogleLogin} disabled={isLoading}>
             <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2"/>
             Sign Up with Google
         </Button>
         
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-4">
             <Separator className="flex-1" />
             <span className="mx-4 text-xs text-muted-foreground">OR SIGN UP WITH</span>
             <Separator className="flex-1" />
@@ -175,7 +176,7 @@ export default function SignUpCard({
               <AnimatedButton
                 type="submit"
                 size="lg"
-                className="w-full mt-6"
+                className="w-full mt-4"
                 isLoading={isLoading}
                 animationType="glow"
               >

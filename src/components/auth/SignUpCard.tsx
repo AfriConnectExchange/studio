@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Mail, Eye, EyeOff, User, Phone } from 'lucide-react';
+import { Mail, Eye, EyeOff, User } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import PhoneInput from 'react-phone-number-input';
 
 type Props = any;
 
@@ -23,6 +24,7 @@ export default function SignUpCard({
   handleEmailRegistration,
   handleGoogleLogin,
   onSwitch,
+  handlePhoneRegistration
 }: Props) {
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
@@ -181,23 +183,60 @@ export default function SignUpCard({
             </form>
           </TabsContent>
           <TabsContent value="phone">
-            <div className="space-y-4 pt-4">
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handlePhoneRegistration();
+                }}
+                className="space-y-4 pt-4"
+            >
                 <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone-reg-name">Full Name</Label>
                     <div className="relative">
-                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        className="pl-10"
+                            id="phone-reg-name"
+                            placeholder="Enter your full name"
+                            className="pl-10"
+                            value={formData.name}
+                            onChange={(e) => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
+                            required
                         />
                     </div>
                 </div>
-                <AnimatedButton size="lg" className="w-full" disabled>
+                <div className="space-y-2">
+                    <Label htmlFor="phone-reg">Phone Number</Label>
+                    <PhoneInput
+                        id="phone-reg"
+                        placeholder="Enter phone number"
+                        international
+                        defaultCountry="GB"
+                        value={formData.phone}
+                        onChange={(value) => setFormData((prev: any) => ({ ...prev, phone: value }))}
+                    />
+                </div>
+                <div className="flex items-center space-x-2 pt-2">
+                <Checkbox
+                  id="terms-phone"
+                  checked={formData.acceptTerms}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      acceptTerms: Boolean(checked),
+                    }))
+                  }
+                />
+                <Label
+                  htmlFor="terms-phone"
+                  className="text-sm text-muted-foreground"
+                >
+                  I agree to the Terms of Service and Privacy Policy
+                </Label>
+              </div>
+                <AnimatedButton size="lg" className="w-full" type="submit" isLoading={isLoading}>
                     Send Code
                 </AnimatedButton>
-            </div>
+            </form>
           </TabsContent>
         </Tabs>
         

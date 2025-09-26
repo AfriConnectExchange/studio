@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Mail, Eye, EyeOff, Phone } from 'lucide-react';
+import { Mail, Eye, EyeOff } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { AnimatedButton } from '../ui/animated-button';
@@ -9,6 +9,7 @@ import { Button } from '../ui/button';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import PhoneInput from 'react-phone-number-input';
 
 type Props = any;
 
@@ -21,6 +22,7 @@ export default function SignInCard({
   handleEmailLogin,
   handleGoogleLogin,
   onSwitch,
+  handlePhoneLogin,
 }: Props) {
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
@@ -116,23 +118,28 @@ export default function SignInCard({
                 </form>
             </TabsContent>
             <TabsContent value="phone">
-                 <div className="space-y-4 pt-4">
+                 <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handlePhoneLogin();
+                    }}
+                    className="space-y-4 pt-4"
+                >
                     <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
+                         <PhoneInput
                             id="phone"
-                            type="tel"
-                            placeholder="Enter your phone number"
-                            className="pl-10"
-                            />
-                        </div>
+                            placeholder="Enter phone number"
+                            international
+                            defaultCountry="GB"
+                            value={formData.phone}
+                            onChange={(value) => setFormData((prev: any) => ({ ...prev, phone: value }))}
+                        />
                     </div>
-                    <AnimatedButton size="lg" className="w-full" disabled>
+                    <AnimatedButton size="lg" className="w-full" type="submit" isLoading={isLoading}>
                         Send Code
                     </AnimatedButton>
-                </div>
+                </form>
             </TabsContent>
         </Tabs>
         

@@ -104,7 +104,7 @@ export default function SignInCard({
         </div>
 
         <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
-            <Image src="/google.svg" alt="Google" width={20} height={20} className="mr-2"/>
+            <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2"/>
             Sign In with Google
         </Button>
 

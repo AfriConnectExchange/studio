@@ -18,12 +18,22 @@ export default function OnboardingPage() {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
-            setIsUserLoading(false);
 
             if (!user) {
                 router.push('/');
-            } else if (user.user_metadata?.onboarding_completed) {
+                return;
+            }
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('onboarding_completed')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.onboarding_completed) {
                 router.push('/marketplace');
+            } else {
+                setIsUserLoading(false);
             }
         };
 

@@ -38,25 +38,41 @@ export default function Home() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   useEffect(() => {
-    const checkUser = async () => {
+    const checkUserAndRedirect = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setIsAuthLoading(false);
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
+      
+      if (currentUser) {
+        // If user is logged in, check onboarding status and redirect
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (profile?.onboarding_completed) {
+          router.push('/marketplace');
+        } else {
+          router.push('/onboarding');
+        }
+      } else {
+        setIsAuthLoading(false);
+      }
     };
-    checkUser();
+    checkUserAndRedirect();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+       const currentUser = session?.user ?? null;
+       setUser(currentUser);
+       if (!currentUser) {
+         setIsAuthLoading(false);
+       }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
-  
-  useEffect(() => {
-    if (!isAuthLoading && user) {
-        router.push('/marketplace');
-    }
-  }, [user, isAuthLoading, router]);
+  }, [supabase, router]);
+
 
   const authBgImage = PlaceHolderImages.find((img) => img.id === 'auth-background');
 
@@ -89,109 +105,72 @@ export default function Home() {
     }
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          full_name: formData.name,
-        },
-      },
-    });
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        }),
+      });
 
-    if (error) {
-      showAlert('destructive', 'Registration Failed', error.message);
-    } else if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({ id: data.user.id, full_name: formData.name, role_id: 1 });
+      const result = await response.json();
 
-        if (profileError) {
-             showAlert('destructive', 'Registration Failed', `Could not create user profile: ${profileError.message}`);
-        } else {
-             showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
-             handleSwitchMode('signin');
-        }
+      if (!response.ok) {
+        throw new Error(result.message || 'Registration failed.');
+      }
+      
+      showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
+      handleSwitchMode('signin');
+      
+    } catch (error: any) {
+       showAlert('destructive', 'Registration Failed', error.message);
     }
+
     setIsLoading(false);
   };
   
   const handlePhoneRegistration = async () => {
-    if (!formData.acceptTerms) {
-      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
-      return;
-    }
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formData.phone,
-    });
-    if (error) {
-      showAlert('destructive', 'Failed to send OTP', error.message);
-    } else {
-      showAlert('default', 'OTP Sent', 'A verification code has been sent to your phone.');
-      setAuthMode('otp');
-    }
-    setIsLoading(false);
+    // Phone registration logic is not implemented yet
+    console.log("Phone registration UI is visible but functionality is disabled for now.");
   };
 
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    if (error) {
-      showAlert('destructive', 'Login Failed', error.message);
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || 'Login failed.');
+      }
+      // onAuthStateChange will handle the redirect
+      // We just need to wait for the user state to update
+      setIsAuthLoading(true);
+    } catch (error: any) {
+       showAlert('destructive', 'Login Failed', error.message);
     }
     setIsLoading(false);
   };
 
   const handlePhoneLogin = async () => {
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formData.phone,
-    });
-    if (error) {
-      showAlert('destructive', 'Failed to send OTP', error.message);
-    } else {
-      showAlert('default', 'OTP Sent', 'A verification code has been sent to your phone.');
-      setAuthMode('otp');
-    }
-    setIsLoading(false);
+    // Phone login logic is not implemented yet
+    console.log("Phone login UI is visible but functionality is disabled for now.");
   };
   
   const handleOTPComplete = async (otp: string) => {
-    setIsLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({
-        phone: formData.phone,
-        token: otp,
-        type: 'sms',
-    });
-    
-    if (error) {
-        showAlert('destructive', 'Verification Failed', error.message);
-    } else if (data.user) {
-        // Check if a profile exists. If not, create one.
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', data.user.id)
-            .single();
-
-        if (!profile) {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .insert({ id: data.user.id, full_name: formData.name, role_id: 1, phone: formData.phone });
-            
-            if (profileError) {
-                showAlert('destructive', 'Profile Creation Failed', `Your login was successful but we could not create a profile: ${profileError.message}`);
-            }
-        }
-    }
-    // Success is handled by the onAuthStateChange listener
-    setIsLoading(false);
+     // OTP logic is not implemented yet
+    console.log("OTP UI is visible but functionality is disabled for now.");
   }
 
   

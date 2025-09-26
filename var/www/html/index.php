@@ -32,9 +32,16 @@ CREATE TABLE profiles (
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
   avatar_url TEXT, -- Added for profile pictures
+  phone TEXT,
   location TEXT,
+  onboarding_completed BOOLEAN DEFAULT FALSE,
   role_id BIGINT REFERENCES roles(id) ON DELETE SET NULL,
   kyc_status kyc_status_enum DEFAULT 'not_verified',
+  language VARCHAR(10) DEFAULT 'en',
+  timezone VARCHAR(50) DEFAULT 'GMT+0',
+  notifications_email BOOLEAN DEFAULT TRUE,
+  notifications_sms BOOLEAN DEFAULT FALSE,
+  notifications_push BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -367,6 +374,28 @@ AS $$
       pr.full_name ILIKE '%' || search_term || '%'
     )
 $$;
+
+-- =================================================================
+-- FUNCTION to delete user and their profile
+-- =================================================================
+CREATE OR REPLACE FUNCTION public.delete_user_and_profile(user_id_to_delete uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Check if the calling user has the 'admin' role
+  IF (
+    SELECT roles.name FROM roles JOIN profiles ON roles.id = profiles.role_id WHERE profiles.id = auth.uid()
+  ) <> 'admin' THEN
+    RAISE EXCEPTION 'Only administrators can delete users.';
+  END IF;
+
+  DELETE FROM auth.users WHERE id = user_id_to_delete;
+  -- The profile will be deleted automatically due to the ON DELETE CASCADE constraint.
+END;
+$$;
+
 
 -- =================================================================
 --                        END OF SCHEMA

@@ -10,9 +10,12 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { PageLoader } from '@/components/ui/loader';
+import OTPVerification from '@/components/auth/OTPVerification';
+
+type AuthMode = 'signin' | 'signup' | 'otp';
 
 export default function Home() {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authMode, setAuthMode] = useState<AuthMode>('signin');
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -27,12 +30,13 @@ export default function Home() {
     password: '',
     confirmPassword: '',
     acceptTerms: false,
+    phone: '',
+    otp: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // Check user session on initial load
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -64,12 +68,13 @@ export default function Home() {
     toast({ variant, title, description });
   };
 
-  const handleSwitchMode = () => {
-    setAuthMode((prev) => (prev === 'signin' ? 'signup' : 'signin'));
+  const handleSwitchMode = (mode: AuthMode) => {
+    setAuthMode(mode);
     setFormData((prev) => ({
       ...prev,
       password: '',
       confirmPassword: '',
+      otp: '',
     }));
   };
   
@@ -97,23 +102,38 @@ export default function Home() {
     if (error) {
       showAlert('destructive', 'Registration Failed', error.message);
     } else if (data.user) {
-        // Insert into public.profiles table
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({ id: data.user.id, full_name: formData.name, role_id: 1 }); // Default to buyer role
+          .insert({ id: data.user.id, full_name: formData.name, role_id: 1 });
 
         if (profileError) {
              showAlert('destructive', 'Registration Failed', `Could not create user profile: ${profileError.message}`);
-             // Consider deleting the auth user if profile creation fails
-             // This requires admin privileges and should be done in a server-side function.
-             // await supabase.auth.admin.deleteUser(data.user.id);
         } else {
              showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
-             setAuthMode('signin');
+             handleSwitchMode('signin');
         }
     }
     setIsLoading(false);
   };
+  
+  const handlePhoneRegistration = async () => {
+    if (!formData.acceptTerms) {
+      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: formData.phone,
+    });
+    if (error) {
+      showAlert('destructive', 'Failed to send OTP', error.message);
+    } else {
+      showAlert('default', 'OTP Sent', 'A verification code has been sent to your phone.');
+      setAuthMode('otp');
+    }
+    setIsLoading(false);
+  };
+
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
@@ -125,9 +145,55 @@ export default function Home() {
     if (error) {
       showAlert('destructive', 'Login Failed', error.message);
     }
-    // Successful login is handled by onAuthStateChange effect
     setIsLoading(false);
   };
+
+  const handlePhoneLogin = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: formData.phone,
+    });
+    if (error) {
+      showAlert('destructive', 'Failed to send OTP', error.message);
+    } else {
+      showAlert('default', 'OTP Sent', 'A verification code has been sent to your phone.');
+      setAuthMode('otp');
+    }
+    setIsLoading(false);
+  };
+  
+  const handleOTPComplete = async (otp: string) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.verifyOtp({
+        phone: formData.phone,
+        token: otp,
+        type: 'sms',
+    });
+    
+    if (error) {
+        showAlert('destructive', 'Verification Failed', error.message);
+    } else if (data.user) {
+        // Check if a profile exists. If not, create one.
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', data.user.id)
+            .single();
+
+        if (!profile) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({ id: data.user.id, full_name: formData.name, role_id: 1, phone: formData.phone });
+            
+            if (profileError) {
+                showAlert('destructive', 'Profile Creation Failed', `Your login was successful but we could not create a profile: ${profileError.message}`);
+            }
+        }
+    }
+    // Success is handled by the onAuthStateChange listener
+    setIsLoading(false);
+  }
+
   
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -141,7 +207,6 @@ export default function Home() {
         showAlert('destructive', 'Google Login Failed', error.message);
         setIsLoading(false);
     }
-    // The rest is handled by redirects and onAuthStateChange
   }
 
 
@@ -161,7 +226,8 @@ export default function Home() {
             isLoading={isLoading}
             handleEmailLogin={handleEmailLogin}
             handleGoogleLogin={handleGoogleLogin}
-            onSwitch={handleSwitchMode}
+            onSwitch={() => handleSwitchMode('signup')}
+            handlePhoneLogin={handlePhoneLogin}
           />
         );
       case 'signup':
@@ -176,8 +242,19 @@ export default function Home() {
             isLoading={isLoading}
             handleEmailRegistration={handleEmailRegistration}
             handleGoogleLogin={handleGoogleLogin}
-            onSwitch={handleSwitchMode}
+            onSwitch={() => handleSwitchMode('signin')}
+            handlePhoneRegistration={handlePhoneRegistration}
           />
+        );
+      case 'otp':
+        return (
+            <OTPVerification
+                formData={formData}
+                handleOTPComplete={handleOTPComplete}
+                handleResendOTP={handlePhoneLogin} // Resending OTP is the same as initial send
+                isLoading={isLoading}
+                onBack={() => handleSwitchMode('signin')}
+            />
         );
       default:
         return null;

@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { Separator } from '../ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 type Props = any;
 

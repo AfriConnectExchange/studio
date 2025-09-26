@@ -69,56 +69,8 @@
   }
 }
 
-/* From your design, for the phone input */
-.PhoneInput {
-  display: flex;
-  align-items: center;
-  height: 2.5rem; /* 40px, matching shadcn's default input height */
-  width: 100%;
-  border-radius: var(--radius);
-  border: 1px solid hsl(var(--input));
-  background-color: hsl(var(--background));
-  padding: 0 0.75rem; /* 12px horizontal padding */
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.PhoneInput--focus {
-  outline: none;
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 1px hsl(var(--ring));
-}
-
-.PhoneInputCountry {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* 8px gap between flag and number */
-  padding-right: 0.75rem; /* 12px right padding */
-  margin-right: 0.75rem; /* 12px margin to separate from input */
-  border-right: 1px solid hsl(var(--border));
-  height: 60%;
-}
-
-/* Hide the default country select dropdown arrow */
-.PhoneInputCountrySelectArrow {
-  display: none;
-}
-
-.PhoneInputCountryIcon {
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
 .PhoneInputInput {
+  background: transparent;
   border: none;
   outline: none;
-  background: transparent;
-  flex: 1;
-  height: 100%;
-  font-size: 0.9375rem;
-  color: inherit;
-}
-
-/* Placeholder styling */
-.PhoneInputInput::placeholder {
-  color: hsl(var(--muted-foreground));
 }

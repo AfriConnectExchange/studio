@@ -67,6 +67,9 @@ export default function Home() {
        setUser(currentUser);
        if (!currentUser) {
          setIsAuthLoading(false);
+       } else {
+         // When user becomes available, trigger the redirect check again
+         checkUserAndRedirect();
        }
     });
 

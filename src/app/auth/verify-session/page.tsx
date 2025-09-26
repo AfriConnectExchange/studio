@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { PageLoader } from '@/components/ui/loader';
 
-export default function VerifySessionPage() {
+function VerifySessionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -70,3 +70,17 @@ export default function VerifySessionPage() {
     </div>
   );
 }
+
+export default function VerifySessionPage() {
+  return (
+    <Suspense fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center space-y-4">
+            <PageLoader />
+            <p className="text-muted-foreground">Loading...</p>
+        </div>
+    }>
+      <VerifySessionContent />
+    </Suspense>
+  );
+}
+

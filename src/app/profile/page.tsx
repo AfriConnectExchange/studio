@@ -3,7 +3,7 @@ import { Header } from '@/components/dashboard/header';
 import { ProfilePage } from '@/components/profile/profile-page';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { PageLoader } from '@/components/ui/loader';
 

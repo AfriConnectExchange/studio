@@ -22,7 +22,7 @@ import {
 import { Mail, MailCheck } from 'lucide-react';
 import { useState } from 'react';
 import { AnimatedButton } from '../ui/animated-button';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),

@@ -1,276 +1,226 @@
-
-'use client';
-import { useEffect, useState } from 'react';
-import { Logo } from '@/components/logo';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import Image from 'next/image';
-import SignInCard from '@/components/auth/SignInCard';
-import SignUpCard from '@/components/auth/SignUpCard';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import { PageLoader } from '@/components/ui/loader';
-import OTPVerification from '@/components/auth/OTPVerification';
-import CheckEmailCard from '@/components/auth/CheckEmailCard';
-
-type AuthMode = 'signin' | 'signup' | 'otp' | 'check-email';
+import React from 'react';
+import Link from 'next/link';
+import { ArrowRight, Globe, Shield, Users, Key, Database, Clock } from 'lucide-react';
+import AuthAwareButtons from '@/components/AuthAwareButtons';
+import HomePricing from "@/components/HomePricing";
 
 export default function Home() {
-  const [authMode, setAuthMode] = useState<AuthMode>('signin');
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  
-  const { toast } = useToast();
-  const router = useRouter();
-  const supabase = createClient();
+  const productName = process.env.NEXT_PUBLIC_PRODUCTNAME;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false,
-    phone: '',
-    otp: '',
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  useEffect(() => {
-    // Keep user session check disabled for simulation
-    setIsAuthLoading(false);
-    // const checkUserAndRedirect = async () => {
-    //   const { data: { session } } = await supabase.auth.getSession();
-    //   const currentUser = session?.user;
-    //   setUser(currentUser ?? null);
-      
-    //   if (currentUser) {
-    //     // If user is logged in, check onboarding status and redirect
-    //     const { data: profile } = await supabase
-    //       .from('profiles')
-    //       .select('onboarding_completed')
-    //       .eq('id', currentUser.id)
-    //       .single();
-
-    //     if (profile?.onboarding_completed) {
-    //       router.push('/marketplace');
-    //     } else {
-    //       router.push('/onboarding');
-    //     }
-    //   } else {
-    //     setIsAuthLoading(false);
-    //   }
-    // };
-    // checkUserAndRedirect();
-
-    // const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    //    const currentUser = session?.user ?? null;
-    //    setUser(currentUser);
-    //    if (!currentUser) {
-    //      setIsAuthLoading(false);
-    //    } else {
-    //      // When user becomes available, trigger the redirect check again
-    //      checkUserAndRedirect();
-    //    }
-    // });
-
-    // return () => subscription.unsubscribe();
-  }, [supabase, router]);
-
-
-  const authBgImage = PlaceHolderImages.find((img) => img.id === 'auth-background');
-
-  const showAlert = (
-    variant: 'default' | 'destructive',
-    title: string,
-    description: string
-  ) => {
-    toast({ variant, title, description });
-  };
-
-  const handleSwitchMode = (mode: AuthMode) => {
-    setAuthMode(mode);
-    setFormData((prev) => ({
-      ...prev,
-      password: '',
-      confirmPassword: '',
-      otp: '',
-    }));
-  };
-  
-  const handleEmailRegistration = async () => {
-    if (formData.password !== formData.confirmPassword) {
-      showAlert('destructive', 'Error', 'Passwords do not match.');
-      return;
+  const features = [
+    {
+      icon: Shield,
+      title: 'Robust Authentication',
+      description: 'Secure login with email/password, Multi-Factor Authentication, and SSO providers',
+      color: 'text-green-600'
+    },
+    {
+      icon: Database,
+      title: 'File Management',
+      description: 'Built-in file storage with secure sharing, downloads, and granular permissions',
+      color: 'text-orange-600'
+    },
+    {
+      icon: Users,
+      title: 'User Settings',
+      description: 'Complete user management with password updates, MFA setup, and profile controls',
+      color: 'text-red-600'
+    },
+    {
+      icon: Clock,
+      title: 'Task Management',
+      description: 'Built-in todo system with real-time updates and priority management',
+      color: 'text-teal-600'
+    },
+    {
+      icon: Globe,
+      title: 'Legal Documents',
+      description: 'Pre-configured privacy policy, terms of service, and refund policy pages',
+      color: 'text-purple-600'
+    },
+    {
+      icon: Key,
+      title: 'Cookie Consent',
+      description: 'GDPR-compliant cookie consent system with customizable preferences',
+      color: 'text-blue-600'
     }
-    if (!formData.acceptTerms) {
-      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
-      return;
-    }
-    setIsLoading(true);
-    
-    console.log("Simulating email registration with:", formData);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  ];
 
-    showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
-    handleSwitchMode('check-email');
-    
-    setIsLoading(false);
-  };
-  
-  const handlePhoneRegistration = async () => {
-    // Phone registration logic is not implemented yet
-    console.log("Simulating phone registration UI is visible but functionality is disabled for now.");
-     if (!formData.acceptTerms) {
-      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
-      return;
-    }
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    handleSwitchMode('otp');
-  };
-
-
-  const handleEmailLogin = async () => {
-    setIsLoading(true);
-    
-    console.log("Simulating email login with:", formData.email);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    showAlert('default', 'Login Successful', 'Redirecting to your dashboard...');
-    router.push('/marketplace');
-    
-    setIsLoading(false);
-  };
-
-  const handlePhoneLogin = async () => {
-    // Phone login logic is not implemented yet
-    console.log("Simulating phone login UI is visible but functionality is disabled for now.");
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    handleSwitchMode('otp');
-  };
-  
-  const handleOTPComplete = async (otp: string) => {
-     // OTP logic is not implemented yet
-    console.log("Simulating OTP verification with:", otp);
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    showAlert('default', 'Verification Successful', 'Redirecting to your dashboard...');
-    router.push('/marketplace');
-    setIsLoading(false);
-  }
-
-  
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    console.log("Simulating Google Login");
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    showAlert('default', 'Google Login Successful', 'Redirecting...');
-    router.push('/marketplace');
-    setIsLoading(false);
-  }
-
-
-  const renderAuthCard = () => {
-    if (isAuthLoading) {
-        return <PageLoader />;
-    }
-    
-    switch (authMode) {
-      case 'signin':
-        return (
-          <SignInCard
-            formData={formData}
-            setFormData={setFormData}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            isLoading={isLoading}
-            handleEmailLogin={handleEmailLogin}
-            handleGoogleLogin={handleGoogleLogin}
-            onSwitch={() => handleSwitchMode('signup')}
-            handlePhoneLogin={handlePhoneLogin}
-          />
-        );
-      case 'signup':
-        return (
-          <SignUpCard
-            formData={formData}
-            setFormData={setFormData}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            showConfirmPassword={showConfirmPassword}
-            setShowConfirmPassword={setShowConfirmPassword}
-            isLoading={isLoading}
-            handleEmailRegistration={handleEmailRegistration}
-            handleGoogleLogin={handleGoogleLogin}
-            onSwitch={() => handleSwitchMode('signin')}
-            handlePhoneRegistration={handlePhoneRegistration}
-          />
-        );
-      case 'otp':
-        return (
-            <OTPVerification
-                formData={formData}
-                handleOTPComplete={handleOTPComplete}
-                handleResendOTP={handlePhoneLogin} // Resending OTP is the same as initial send
-                isLoading={isLoading}
-                onBack={() => handleSwitchMode('signin')}
-            />
-        );
-      case 'check-email':
-        return (
-            <CheckEmailCard
-                email={formData.email}
-                onBack={() => handleSwitchMode('signin')}
-                isVerifying={false}
-            />
-        );
-      default:
-        return null;
-    }
-  };
+  const stats = [
+    { label: 'Active Users', value: '10K+' },
+    { label: 'Organizations', value: '2K+' },
+    { label: 'Countries', value: '50+' },
+    { label: 'Uptime', value: '99.9%' }
+  ];
 
   return (
-    <div className="w-full bg-background">
-      <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-          {authBgImage && (
-            <Image
-              src={authBgImage.imageUrl}
-              alt={authBgImage.description}
-              fill
-              className="object-cover"
-              data-ai-hint={authBgImage.imageHint}
-            />
-          )}
-          <div className="absolute inset-0 bg-zinc-900/60" />
-          <div className="relative z-20 flex items-center text-lg font-medium">
-            <Logo withText={false} />
-            <span className="ml-2">AfriConnect Exchange</span>
+      <div className="min-h-screen">
+        <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16 items-center">
+              <div className="flex-shrink-0">
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+                {productName}
+              </span>
+              </div>
+              <div className="hidden md:flex items-center space-x-8">
+                <Link href="#features" className="text-gray-600 hover:text-gray-900">
+                  Features
+                </Link>
+
+                <Link href="#pricing" className="text-gray-600 hover:text-gray-900">
+                  Pricing
+                </Link>
+                <Link
+                    href="https://github.com/Razikus/supabase-nextjs-template"
+                    className="text-gray-600 hover:text-gray-900"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                  Documentation
+                </Link>
+
+                <Link
+                    href="https://github.com/Razikus/supabase-nextjs-template"
+                    className="bg-primary-800 text-white px-4 py-2 rounded-lg hover:bg-primary-900 transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                  Grab This Template
+                </Link>
+
+                <AuthAwareButtons variant="nav" />
+              </div>
+            </div>
           </div>
-          <div className="relative z-20 mt-auto">
-            <blockquote className="space-y-2">
-              <p className="text-lg">
-                &ldquo;Connecting the diaspora, one transaction at a time.
-                Secure, fast, and reliable exchanges for a new era of
-                commerce.&rdquo;
+        </nav>
+
+        <section className="relative pt-32 pb-24 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+                Bootstrap Your SaaS
+                <span className="block text-primary-600">In 5 minutes</span>
+              </h1>
+              <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+                Launch your SaaS product in days, not months. Complete with authentication and enterprise-grade security built right in.
               </p>
-              <footer className="text-sm">The Future of Exchange</footer>
-            </blockquote>
+              <div className="mt-10 flex gap-4 justify-center">
+
+                <AuthAwareButtons />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="lg:p-8 flex items-center justify-center">
-          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
-            {renderAuthCard()}
+        </section>
+
+        <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-4xl font-bold text-primary-600">{stat.value}</div>
+                    <div className="mt-2 text-sm text-gray-600">{stat.label}</div>
+                  </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-24 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold">Everything You Need</h2>
+              <p className="mt-4 text-xl text-gray-600">
+                Built with modern technologies for reliability and speed
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                  <div
+                      key={index}
+                      className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <feature.icon className={`h-8 w-8 ${feature.color}`} />
+                    <h3 className="mt-4 text-xl font-semibold">{feature.title}</h3>
+                    <p className="mt-2 text-gray-600">{feature.description}</p>
+                  </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <HomePricing />
+
+        <section className="py-24 bg-primary-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold text-white">
+              Ready to Transform Your Idea into Reality?
+            </h2>
+            <p className="mt-4 text-xl text-primary-100">
+              Join thousands of developers building their SaaS with {productName}
+            </p>
+            <Link
+                href="/auth/register"
+                className="mt-8 inline-flex items-center px-6 py-3 rounded-lg bg-white text-primary-600 font-medium hover:bg-primary-50 transition-colors"
+            >
+              Get Started Now
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
+        </section>
+
+        <footer className="bg-gray-50 border-t border-gray-200">
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Product</h4>
+                <ul className="mt-4 space-y-2">
+                  <li>
+                    <Link href="#features" className="text-gray-600 hover:text-gray-900">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#pricing" className="text-gray-600 hover:text-gray-900">
+                      Pricing
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Resources</h4>
+                <ul className="mt-4 space-y-2">
+                  <li>
+                    <Link href="https://github.com/Razikus/supabase-nextjs-template" className="text-gray-600 hover:text-gray-900">
+                      Documentation
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Legal</h4>
+                <ul className="mt-4 space-y-2">
+                  <li>
+                    <Link href="/legal/privacy" className="text-gray-600 hover:text-gray-900">
+                      Privacy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/terms" className="text-gray-600 hover:text-gray-900">
+                      Terms
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <p className="text-center text-gray-600">
+                © {new Date().getFullYear()} {productName}. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </footer>
       </div>
-    </div>
   );
 }

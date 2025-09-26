@@ -3,7 +3,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 import { PageLoader } from '@/components/ui/loader';
 
 function VerifySessionContent() {

@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 
 interface AccountActionsProps {
   onFeedback: (type: 'success' | 'error', message: string) => void;

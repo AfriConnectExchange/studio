@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/dashboard/header';
 import { PageLoader } from '@/components/ui/loader';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 export default function KycPage() {

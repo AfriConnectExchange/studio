@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { cn } from '@/lib/utils';
-// FirebaseClientProvider is no longer needed as we are using Supabase
-// import { FirebaseClientProvider } from '@/firebase';
+import type { Metadata } from "next";
+import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
+import CookieConsent from "@/components/Cookies";
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 
 export const metadata: Metadata = {
-  title: 'AfriConnect Exchange',
-  description: 'Connecting the diaspora, one exchange at a time.',
+  title: process.env.NEXT_PUBLIC_PRODUCTNAME,
+  description: "The best way to build your SaaS product.",
 };
 
 export default function RootLayout({
@@ -15,27 +15,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let theme = process.env.NEXT_PUBLIC_THEME
+  if(!theme) {
+    theme = "theme-sass3"
+  }
+  const gaID = process.env.NEXT_PUBLIC_GOOGLE_TAG;
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body
-        className={cn(
-          'min-h-screen bg-background font-body antialiased'
-        )}
-      >
-        {/* We no longer need the Firebase provider */}
-        <div className="container mx-auto px-4">
-          {children}
-        </div>
-        <Toaster />
-      </body>
+    <html lang="en">
+    <body className={theme}>
+      {children}
+      <Analytics />
+      <CookieConsent />
+      { gaID && (
+          <GoogleAnalytics gaId={gaID}/>
+      )}
+
+    </body>
     </html>
   );
 }

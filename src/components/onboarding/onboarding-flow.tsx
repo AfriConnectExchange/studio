@@ -8,7 +8,7 @@ import { Progress } from '../ui/progress';
 import { Logo } from '../logo';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 export function OnboardingFlow() {

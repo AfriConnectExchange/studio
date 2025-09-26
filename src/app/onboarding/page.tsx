@@ -4,7 +4,7 @@ import { OnboardingFlow } from '@/components/onboarding/onboarding-flow';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PageLoader } from '@/components/ui/loader';
-import { createClient } from '@/lib/supabase/client';
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 

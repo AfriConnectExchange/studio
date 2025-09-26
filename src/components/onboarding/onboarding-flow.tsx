@@ -54,18 +54,11 @@ export function OnboardingFlow() {
                 location: userData.location,
                 phone: userData.phoneNumber,
                 role_id: parseInt(userData.role, 10),
+                onboarding_completed: true, // Set the flag to true
              })
             .eq('id', user.id);
             
         if (error) throw error;
-        
-        // This is a simplified onboarding flag. 
-        // In a real app, you might have a dedicated table or a more complex check.
-        const { error: userMetaError } = await supabase.auth.updateUser({
-            data: { onboarding_completed: true }
-        });
-        
-        if (userMetaError) throw userMetaError;
 
         handleNext();
 

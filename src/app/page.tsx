@@ -105,7 +105,8 @@ export default function Home() {
         if (profileError) {
              showAlert('destructive', 'Registration Failed', `Could not create user profile: ${profileError.message}`);
              // Consider deleting the auth user if profile creation fails
-             await supabase.auth.admin.deleteUser(data.user.id);
+             // This requires admin privileges and should be done in a server-side function.
+             // await supabase.auth.admin.deleteUser(data.user.id);
         } else {
              showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
              setAuthMode('signin');

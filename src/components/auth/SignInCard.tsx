@@ -28,19 +28,19 @@ export default function SignInCard({
 }: Props) {
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
-      <div className="p-6 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">AE</span>
+      <div className="p-4 md:p-6 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
+        <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg md:rounded-xl flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-base md:text-lg">AE</span>
           </div>
-          <span className="text-2xl font-bold">AfriConnect Exchange</span>
+          <span className="text-xl md:text-2xl font-bold lg:block hidden">AfriConnect Exchange</span>
         </div>
-        <h1 className="text-xl font-semibold mb-1">Welcome Back!</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-lg md:text-xl font-semibold mb-1">Welcome Back!</h1>
+        <p className="text-xs md:text-sm text-muted-foreground hidden md:block">
           Sign in to continue your journey
         </p>
       </div>
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <Button variant="outline" className="w-full mb-4" onClick={handleGoogleLogin} disabled={isLoading}>
             <Image src="/google-logo.svg" alt="Google" width={20} height={20} className="mr-2"/>
             Sign In with Google

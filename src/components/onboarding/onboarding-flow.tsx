@@ -1,28 +1,36 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WelcomeStep } from './welcome-step';
 import { RoleSelectionStep } from './role-selection-step';
 import { PersonalDetailsStep } from './personal-details-step';
 import { FinalStep } from './final-step';
 import { Progress } from '../ui/progress';
 import { Logo } from '../logo';
-import { useFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export function OnboardingFlow() {
   const [currentStep, setCurrentStep] = useState(0);
-  const { user, firestore } = useFirebase();
   const { toast } = useToast();
   const router = useRouter();
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const getUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    };
+    getUser();
+  }, [supabase]);
+  
   const [userData, setUserData] = useState({
-    role: '',
-    firstName: user?.displayName?.split(' ')[0] || '',
-    lastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
-    address: '',
-    phoneNumber: user?.phoneNumber || ''
+    role: '1', // Default role_id for 'buyer'
+    fullName: user?.user_metadata?.full_name || '',
+    location: '',
+    phoneNumber: user?.phone || ''
   });
 
   const handleNext = () => setCurrentStep((prev) => prev + 1);
@@ -39,18 +47,26 @@ export function OnboardingFlow() {
     }
     
     try {
-        const userRef = doc(firestore, 'users', user.uid);
-        const finalUserData = {
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            phoneNumber: userData.phoneNumber,
-            address: userData.address,
-            onboardingCompleted: true,
-            roleIds: [userData.role]
-        }
-        updateDocumentNonBlocking(userRef, finalUserData);
-        // The update is non-blocking, so we can proceed immediately.
-        // The final step will show a loading spinner before redirecting.
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                full_name: userData.fullName,
+                location: userData.location,
+                phone: userData.phoneNumber,
+                role_id: parseInt(userData.role, 10),
+             })
+            .eq('id', user.id);
+            
+        if (error) throw error;
+        
+        // This is a simplified onboarding flag. 
+        // In a real app, you might have a dedicated table or a more complex check.
+        const { error: userMetaError } = await supabase.auth.updateUser({
+            data: { onboarding_completed: true }
+        });
+        
+        if (userMetaError) throw userMetaError;
+
         handleNext();
 
     } catch(e: any) {

@@ -10,6 +10,7 @@ import {
   TrendingUp,
   HelpCircle,
   Gift,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +20,10 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useFirebase } from '@/firebase';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface HeaderProps {
     cartCount?: number;
@@ -29,9 +31,27 @@ interface HeaderProps {
 
 export function Header({ cartCount = 0 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useFirebase();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const [isCartAnimating, setIsCartAnimating] = useState(false);
+  const supabase = createClient();
+  
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
 
   useEffect(() => {
     if (cartCount > 0) {
@@ -40,6 +60,11 @@ export function Header({ cartCount = 0 }: HeaderProps) {
       return () => clearTimeout(timer);
     }
   }, [cartCount]);
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  }
 
   const notificationCount = 2;
 
@@ -147,30 +172,51 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                   </div>
                 </div>
 
-                {user && (
-                   <div className="border-t mt-4 pt-4">
-                    <Link href="/notifications" passHref>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start"
-                        onClick={handleMobileLinkClick}
-                      >
-                        <Bell className="w-4 h-4 mr-2" />
-                        Notifications
-                      </Button>
-                    </Link>
-                    <Link href="/profile" passHref>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start"
-                        onClick={handleMobileLinkClick}
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Account
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <div className="border-t mt-4 pt-4">
+                    {user ? (
+                        <>
+                         <Link href="/notifications" passHref>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={handleMobileLinkClick}
+                            >
+                                <Bell className="w-4 h-4 mr-2" />
+                                Notifications
+                            </Button>
+                            </Link>
+                            <Link href="/profile" passHref>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={handleMobileLinkClick}
+                            >
+                                <User className="w-4 h-4 mr-2" />
+                                Account
+                            </Button>
+                            </Link>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start text-destructive hover:text-destructive"
+                                onClick={() => { handleLogout(); handleMobileLinkClick(); }}
+                            >
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Sign Out
+                            </Button>
+                        </>
+                    ) : (
+                         <Link href="/" passHref>
+                            <Button
+                                className="w-full justify-start"
+                                onClick={handleMobileLinkClick}
+                            >
+                                <User className="w-4 h-4 mr-2" />
+                                Sign In / Register
+                            </Button>
+                         </Link>
+                    )}
+                </div>
+
               </div>
             </SheetContent>
           </Sheet>
@@ -214,7 +260,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
               ))}
             </div>
 
-            {user && (
+            {user ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link href="/cart" passHref>
                   <motion.div
@@ -256,6 +302,12 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                   </Button>
                 </Link>
               </div>
+            ) : (
+                <div className="hidden md:flex">
+                     <Link href="/" passHref>
+                        <Button>Sign In</Button>
+                     </Link>
+                </div>
             )}
             
             <div className="flex md:hidden items-center gap-1">

@@ -1,21 +1,34 @@
 
 'use client';
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow';
-import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PageLoader } from '@/components/ui/loader';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 
 export default function OnboardingPage() {
-    const { user, isUserLoading } = useFirebase();
+    const [user, setUser] = useState<User | null>(null);
+    const [isUserLoading, setIsUserLoading] = useState(true);
     const router = useRouter();
+    const supabase = createClient();
 
     useEffect(() => {
-        if (!isUserLoading && !user) {
-            router.push('/');
-        }
-    }, [user, isUserLoading, router]);
+        const checkUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            setIsUserLoading(false);
+
+            if (!user) {
+                router.push('/');
+            } else if (user.user_metadata?.onboarding_completed) {
+                router.push('/marketplace');
+            }
+        };
+
+        checkUser();
+    }, [supabase, router]);
 
     if(isUserLoading || !user) {
          return <PageLoader />;

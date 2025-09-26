@@ -2,20 +2,30 @@
 
 import { Header } from '@/components/dashboard/header';
 import { NotificationsPage } from '@/components/notifications/notifications-page';
-import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PageLoader } from '@/components/ui/loader';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export default function Notifications() {
-  const { user, isUserLoading } = useFirebase();
+  const [user, setUser] = useState<User | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const router = useRouter();
-
+  const supabase = createClient();
+  
   useEffect(() => {
+    const getUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        setIsUserLoading(false);
+    };
+    getUser();
+
     if (!isUserLoading && !user) {
       router.push('/');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, supabase.auth]);
   
   if (isUserLoading || !user) {
     return <PageLoader />;

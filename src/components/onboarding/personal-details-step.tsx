@@ -1,5 +1,5 @@
 'use client';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,9 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 
 const formSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters.'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters.'),
-  address: z.string().min(10, 'Please enter a full address.').optional().or(z.literal('')),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters.'),
   phoneNumber: z.string().min(10, 'Please enter a valid phone number.'),
+  location: z.string().min(10, 'Please enter a full address.').optional().or(z.literal('')),
 });
 
 type PersonalDetailsFormValues = z.infer<typeof formSchema>;
@@ -37,10 +36,9 @@ export function PersonalDetailsStep({ onNext, onBack, onUpdate, defaultValues }:
   const form = useForm<PersonalDetailsFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: defaultValues.firstName || '',
-      lastName: defaultValues.lastName || '',
-      address: defaultValues.address || '',
+      fullName: defaultValues.fullName || '',
       phoneNumber: defaultValues.phoneNumber || '',
+      location: defaultValues.location || '',
     },
   });
 
@@ -57,34 +55,19 @@ export function PersonalDetailsStep({ onNext, onBack, onUpdate, defaultValues }:
         </div>
         <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="John" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
+            <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
                 />
-            </div>
           
             <FormField
               control={form.control}
@@ -108,10 +91,10 @@ export function PersonalDetailsStep({ onNext, onBack, onUpdate, defaultValues }:
 
             <FormField
               control={form.control}
-              name="address"
+              name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address (Optional)</FormLabel>
+                  <FormLabel>Location / Address (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="123 Main St, London, UK"

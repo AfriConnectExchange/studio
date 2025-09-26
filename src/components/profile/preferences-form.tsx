@@ -6,76 +6,75 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useFirebase, updateDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
-import { User as FirebaseUser } from 'firebase/auth';
-import { doc, DocumentData } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const formSchema = z.object({
   language: z.string(),
   timezone: z.string(),
-  notifications: z.object({
-    email: z.boolean(),
-    sms: z.boolean(),
-    push: z.boolean(),
-  }),
+  notifications_email: z.boolean(),
+  notifications_sms: z.boolean(),
+  notifications_push: z.boolean(),
 });
 
 type PreferencesFormValues = z.infer<typeof formSchema>;
 
 interface PreferencesFormProps {
-  user: FirebaseUser;
+  user: User;
   onFeedback: (type: 'success' | 'error', message: string) => void;
 }
 
 export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
-  const { firestore } = useFirebase();
+  const supabase = createClient();
   const [isSaving, setIsSaving] = useState(false);
-
-  const userDocRef = useMemoFirebase(() => doc(firestore, 'users', user.uid), [firestore, user.uid]);
-  const { data: userProfile, isLoading } = useDoc<DocumentData>(userDocRef);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<PreferencesFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       language: 'en',
       timezone: 'GMT+0',
-      notifications: {
-        email: true,
-        sms: true,
-        push: true,
-      },
+      notifications_email: true,
+      notifications_sms: false,
+      notifications_push: true,
     },
   });
 
   useEffect(() => {
-    if (userProfile) {
-      form.reset({
-        language: userProfile.language || 'en',
-        timezone: userProfile.timezone || 'GMT+0',
-        notifications: {
-          email: userProfile.notifications?.email ?? true,
-          sms: userProfile.notifications?.sms ?? true,
-          push: userProfile.notifications?.push ?? true,
-        },
-      });
-    }
-  }, [userProfile, form]);
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      if (data) {
+        form.reset({
+          language: data.language || 'en',
+          timezone: data.timezone || 'GMT+0',
+          notifications_email: data.notifications_email ?? true,
+          notifications_sms: data.notifications_sms ?? false,
+          notifications_push: data.notifications_push ?? true,
+        });
+      }
+      setIsLoading(false);
+    };
+    fetchProfile();
+  }, [user.id, supabase, form]);
 
   const onSubmit = async (values: PreferencesFormValues) => {
     setIsSaving(true);
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      updateDocumentNonBlocking(userRef, values);
+    const { error } = await supabase
+      .from('profiles')
+      .update(values)
+      .eq('id', user.id);
+
+    if (error) {
+      onFeedback('error', error.message || 'Failed to update preferences.');
+    } else {
       onFeedback('success', 'Preferences updated successfully!');
-    } catch (e: any) {
-      onFeedback('error', e.message || 'Failed to update preferences.');
-    } finally {
-      setIsSaving(false);
     }
+    setIsSaving(false);
   };
 
   if (isLoading) {
@@ -140,11 +139,10 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="GMT-1">GMT-1</SelectItem>
-                        <SelectItem value="GMT+0">GMT+0</SelectItem>
-                        <SelectItem value="GMT+1">GMT+1</SelectItem>
+                        <SelectItem value="GMT+0">GMT+0 (London)</SelectItem>
+                        <SelectItem value="GMT+1">GMT+1 (Lagos)</SelectItem>
                         <SelectItem value="GMT+2">GMT+2</SelectItem>
-                        <SelectItem value="GMT+3">GMT+3</SelectItem>
-                        <SelectItem value="GMT+4">GMT+4</SelectItem>
+                        <SelectItem value="GMT+3">GMT+3 (Nairobi)</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -159,7 +157,7 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
               <div className="space-y-3">
                 <FormField
                   control={form.control}
-                  name="notifications.email"
+                  name="notifications_email"
                   render={({ field }) => (
                     <div className="flex items-center justify-between">
                       <div>
@@ -174,7 +172,7 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
                 />
                  <FormField
                   control={form.control}
-                  name="notifications.sms"
+                  name="notifications_sms"
                   render={({ field }) => (
                     <div className="flex items-center justify-between">
                       <div>
@@ -189,7 +187,7 @@ export function PreferencesForm({ user, onFeedback }: PreferencesFormProps) {
                 />
                  <FormField
                   control={form.control}
-                  name="notifications.push"
+                  name="notifications_push"
                   render={({ field }) => (
                     <div className="flex items-center justify-between">
                       <div>

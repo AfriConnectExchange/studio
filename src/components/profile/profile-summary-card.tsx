@@ -1,74 +1,76 @@
 'use client';
 
-import { User as FirebaseUser } from 'firebase/auth';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { Mail, Phone, MapPin, User, Settings, Receipt, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useFirebase, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, DocumentData } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { cn } from '@/lib/utils';
-
+import { createClient } from '@/lib/supabase/client';
 
 interface ProfileSummaryCardProps {
-  user: FirebaseUser;
+  user: SupabaseUser;
   onNavigate: (page: string) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-const getRoleColor = (role?: string) => {
-  switch (role) {
-    case 'seller': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-    case 'sme': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
-    case 'trainer': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+const getRoleColor = (roleId?: number) => {
+  switch (roleId) {
+    case 2: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    case 3: return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+    case 4: return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
 };
 
-const getRoleLabel = (role?: string) => {
-  switch (role) {
-    case 'sme': return 'SME Business';
-    case 'trainer': return 'Trainer/Educator';
-    case 'seller': return 'Seller';
+const getRoleLabel = (roleId?: number) => {
+  switch (roleId) {
+    case 2: return 'Seller';
+    case 3: return 'SME Business';
+    case 4: return 'Trainer/Educator';
     default: return 'Buyer';
   }
 };
 
 export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }: ProfileSummaryCardProps) {
-  const { auth, firestore } = useFirebase();
+  const supabase = createClient();
   const { toast } = useToast();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  
-  const userDocRef = useMemoFirebase(() => doc(firestore, 'users', user.uid), [firestore, user.uid]);
-  const { data: userProfile } = useDoc<DocumentData>(userDocRef);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      setUserProfile(data);
+    };
+    fetchProfile();
+  }, [user.id, supabase]);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
       onNavigate('/');
-    } catch (error) {
+    } catch (error: any) {
        toast({
         variant: 'destructive',
         title: 'Logout Failed',
-        description: 'An error occurred during logout. Please try again.',
+        description: error.message || 'An error occurred during logout. Please try again.',
       });
     } finally {
       setShowLogoutConfirm(false);
     }
   };
 
-  const userRole = userProfile?.roleIds?.[0] || 'buyer';
-  const userName = userProfile?.firstName || userProfile?.lastName ? `${userProfile.firstName} ${userProfile.lastName}` : user.displayName || 'Unnamed User';
+  const userName = userProfile?.full_name || user.user_metadata?.full_name || 'Unnamed User';
   
   const menuItems = [
     { id: 'profile', label: 'Edit Profile', icon: User },
@@ -82,14 +84,14 @@ export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }
         <CardContent className="pt-6">
           <div className="text-center">
             <Avatar className="w-20 h-20 mx-auto mb-4 border-2 border-primary/20 p-1">
-              <AvatarImage src={user.photoURL || undefined} alt={userName} />
+              <AvatarImage src={userProfile?.avatar_url || user.user_metadata?.avatar_url || undefined} alt={userName} />
               <AvatarFallback className="text-2xl bg-muted">
-                {userName.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
+                {userName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
               </AvatarFallback>
             </Avatar>
             <h3 className="font-semibold text-lg mb-1">{userName}</h3>
-            <Badge className={cn('mb-3', getRoleColor(userRole))}>
-              {getRoleLabel(userRole)}
+            <Badge className={cn('mb-3', getRoleColor(userProfile?.role_id))}>
+              {getRoleLabel(userProfile?.role_id)}
             </Badge>
             <div className="text-sm text-muted-foreground space-y-1 my-4">
               {user.email && (
@@ -98,28 +100,19 @@ export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }
                   <span className="truncate">{user.email}</span>
                 </div>
               )}
-              {userProfile?.phoneNumber && (
+              {userProfile?.phone && (
                 <div className="flex items-center justify-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>{userProfile.phoneNumber}</span>
+                  <span>{userProfile.phone}</span>
                 </div>
               )}
-              {userProfile?.address && (
+              {userProfile?.location && (
                 <div className="flex items-center justify-center gap-2 text-center">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{userProfile.address}</span>
+                  <span>{userProfile.location}</span>
                 </div>
               )}
             </div>
-
-            {userProfile?.freeAccessExpiryDate && (
-              <div className="mt-4 p-3 bg-accent rounded-lg">
-                <p className="text-sm font-medium">Free Access</p>
-                <p className="text-xs text-muted-foreground">
-                  Expires: {new Date(userProfile.freeAccessExpiryDate).toLocaleDateString()}
-                </p>
-              </div>
-            )}
 
             <div className="mt-6 space-y-2">
               {menuItems.map(item => (

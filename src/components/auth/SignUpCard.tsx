@@ -1,20 +1,17 @@
 'use client';
 import React from 'react';
-import { Mail, Phone, Eye, EyeOff, User } from 'lucide-react';
+import { Mail, Eye, EyeOff, User } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { AnimatedButton } from '../ui/animated-button';
-import { motion } from 'framer-motion';
-
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
+import { Button } from '../ui/button';
+import Image from 'next/image';
+import { Separator } from '../ui/separator';
 
 type Props = any;
 
 export default function SignUpCard({
-  authMethod,
-  setAuthMethod,
   formData,
   setFormData,
   showPassword,
@@ -23,14 +20,9 @@ export default function SignUpCard({
   setShowConfirmPassword,
   isLoading,
   handleEmailRegistration,
-  simulatePhoneAuth,
-  showAlert,
+  handleGoogleLogin,
   onSwitch,
 }: Props) {
-  const tabs = [
-    { id: 'email', label: 'Email', icon: Mail },
-    { id: 'phone', label: 'Phone', icon: Phone },
-  ];
   return (
     <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
       <div className="p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10">
@@ -46,215 +38,140 @@ export default function SignUpCard({
         </p>
       </div>
       <div className="p-8">
-        <div className="flex bg-muted/50 rounded-full p-1 mb-6 relative">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setAuthMethod(tab.id)}
-              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 z-10 ${
-                authMethod === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/80'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-          <motion.div
-            layoutId="active-auth-method-bubble-signup"
-            className="absolute inset-0 bg-background rounded-full shadow-sm z-0"
-            style={{
-                width: `calc(50% - 4px)`,
-                left: authMethod === 'email' ? '4px' : 'calc(50% + 2px)',
-              }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          />
+        <Button variant="outline" className="w-full mb-6" onClick={handleGoogleLogin} disabled={isLoading}>
+            <Image src="/google.svg" alt="Google" width={20} height={20} className="mr-2"/>
+            Sign Up with Google
+        </Button>
+        
+        <div className="flex items-center my-6">
+            <Separator className="flex-1" />
+            <span className="mx-4 text-xs text-muted-foreground">OR SIGN UP WITH EMAIL</span>
+            <Separator className="flex-1" />
         </div>
-        {authMethod === 'email' ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEmailRegistration();
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev: any) => ({ ...prev, name: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleEmailRegistration();
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+             <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className="pl-10"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev: any) => ({ ...prev, email: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData((prev: any) => ({ ...prev, password: e.target.value }))
-                  }
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v: boolean) => !v)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      confirmPassword: e.target.value,
-                    }))
-                  }
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v: boolean) => !v)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={formData.acceptTerms}
-                onCheckedChange={(checked) =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    acceptTerms: Boolean(checked),
-                  }))
-                }
-              />
-              <Label
-                htmlFor="terms"
-                className="text-sm text-muted-foreground"
-              >
-                I agree to the Terms of Service and Privacy Policy
-              </Label>
-            </div>
-            <AnimatedButton
-              type="submit"
-              size="lg"
-              className="w-full mt-6"
-              isLoading={isLoading}
-              animationType="glow"
-            >
-              Create Account
-            </AnimatedButton>
-          </form>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              simulatePhoneAuth();
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="phoneName">Full Name</Label>
-               <div className="relative">
-                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="phoneName"
+                  id="name"
                   placeholder="Enter your full name"
-                   className="pl-10"
+                  className="pl-10"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData((prev: any) => ({ ...prev, name: e.target.value }))
                   }
                   required
                 />
-              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <PhoneInput
-                id="phone"
-                placeholder="Enter phone number"
-                value={formData.phone}
-                onChange={(value) =>
-                  setFormData((prev: any) => ({ ...prev, phone: value || '' }))
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                className="pl-10"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prev: any) => ({ ...prev, email: e.target.value }))
                 }
-                defaultCountry="GB"
-                international
+                required
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="phoneTerms"
-                checked={formData.acceptTerms}
-                onCheckedChange={(checked) =>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData((prev: any) => ({ ...prev, password: e.target.value }))
+                }
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v: boolean) => !v)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
                   setFormData((prev: any) => ({
                     ...prev,
-                    acceptTerms: Boolean(checked),
+                    confirmPassword: e.target.value,
                   }))
                 }
+                required
               />
-              <Label
-                htmlFor="phoneTerms"
-                className="text-sm text-muted-foreground"
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((v: boolean) => !v)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                I agree to the Terms of Service and Privacy Policy
-              </Label>
+                {showConfirmPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
-            <AnimatedButton
-              type="submit"
-              size="lg"
-              className="w-full mt-6"
-              isLoading={isLoading}
-              animationType="glow"
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="terms"
+              checked={formData.acceptTerms}
+              onCheckedChange={(checked) =>
+                setFormData((prev: any) => ({
+                  ...prev,
+                  acceptTerms: Boolean(checked),
+                }))
+              }
+            />
+            <Label
+              htmlFor="terms"
+              className="text-sm text-muted-foreground"
             >
-              Send Verification Code
-            </AnimatedButton>
-          </form>
-        )}
+              I agree to the Terms of Service and Privacy Policy
+            </Label>
+          </div>
+          <AnimatedButton
+            type="submit"
+            size="lg"
+            className="w-full mt-6"
+            isLoading={isLoading}
+            animationType="glow"
+          >
+            Create Account
+          </AnimatedButton>
+        </form>
         <div className="mt-6 text-center space-y-2">
           <div className="text-sm mt-4">
             Already have an account?{' '}

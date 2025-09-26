@@ -13,66 +13,73 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useFirebase, updateDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
-import { User as FirebaseUser } from 'firebase/auth';
-import { doc, DocumentData } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Textarea } from '../ui/textarea';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const formSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters.'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters.'),
-  phoneNumber: z.string().min(10, 'Please enter a valid phone number.').optional().or(z.literal('')),
-  address: z.string().optional(),
+  full_name: z.string().min(2, 'Full name must be at least 2 characters.'),
+  phone: z.string().min(10, 'Please enter a valid phone number.').optional().or(z.literal('')),
+  location: z.string().optional(),
 });
 
 type PersonalInfoFormValues = z.infer<typeof formSchema>;
 
 interface PersonalInfoFormProps {
-  user: FirebaseUser;
+  user: User;
   onFeedback: (type: 'success' | 'error', message: string) => void;
 }
 
 export function PersonalInfoForm({ user, onFeedback }: PersonalInfoFormProps) {
-  const { firestore } = useFirebase();
+  const supabase = createClient();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const userDocRef = useMemoFirebase(() => doc(firestore, 'users', user.uid), [firestore, user.uid]);
-  const { data: userProfile, isLoading } = useDoc<DocumentData>(userDocRef);
-  
   const form = useForm<PersonalInfoFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      phoneNumber: '',
-      address: '',
+      full_name: '',
+      phone: '',
+      location: '',
     },
   });
 
   useEffect(() => {
-    if (userProfile) {
-      form.reset({
-        firstName: userProfile.firstName || '',
-        lastName: userProfile.lastName || '',
-        phoneNumber: userProfile.phoneNumber || user.phoneNumber || '',
-        address: userProfile.address || '',
-      });
-    }
-  }, [userProfile, user, form]);
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (data) {
+        form.reset({
+          full_name: data.full_name || '',
+          phone: data.phone || user.phone || '',
+          location: data.location || '',
+        });
+      }
+      setIsLoading(false);
+    };
+    fetchProfile();
+  }, [user, supabase, form]);
 
   const onSubmit = async (values: PersonalInfoFormValues) => {
     setIsSaving(true);
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      updateDocumentNonBlocking(userRef, values);
+    const { error } = await supabase
+      .from('profiles')
+      .update(values)
+      .eq('id', user.id);
+      
+    if (error) {
+      onFeedback('error', error.message || 'Failed to update profile.');
+    } else {
       onFeedback('success', 'Profile updated successfully!');
-    } catch (e: any) {
-      onFeedback('error', e.message || 'Failed to update profile.');
-    } finally {
-      setIsSaving(false);
     }
+    setIsSaving(false);
   };
   
   if (isLoading) {
@@ -100,42 +107,27 @@ export function PersonalInfoForm({ user, onFeedback }: PersonalInfoFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="John" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </div>
+             <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
             <FormField
               control={form.control}
-              name="phoneNumber"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 234 567 8900" {...field} />
+                    <Input placeholder="+44 123 456 7890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,13 +135,13 @@ export function PersonalInfoForm({ user, onFeedback }: PersonalInfoFormProps) {
             />
             <FormField
               control={form.control}
-              name="address"
+              name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>Address / Location</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="123 Main St, Anytown, Nigeria"
+                      placeholder="123 Main St, London, UK"
                       {...field}
                     />
                   </FormControl>

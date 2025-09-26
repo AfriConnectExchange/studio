@@ -14,58 +14,61 @@ import {
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useFirebase, updateDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
-import { User as FirebaseUser } from 'firebase/auth';
-import { doc, DocumentData } from 'firebase/firestore';
 import { Loader2, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '../ui/alert';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const formSchema = z.object({
-  role: z.string().min(1, 'Please select a role.'),
+  role_id: z.string().min(1, 'Please select a role.'),
 });
 
 type RoleFormValues = z.infer<typeof formSchema>;
 
 interface AccountRoleFormProps {
-  user: FirebaseUser;
+  user: User;
   onFeedback: (type: 'success' | 'error', message: string) => void;
 }
 
 export function AccountRoleForm({ user, onFeedback }: AccountRoleFormProps) {
-  const { firestore } = useFirebase();
+  const supabase = createClient();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-
-  const userDocRef = useMemoFirebase(() => doc(firestore, 'users', user.uid), [firestore, user.uid]);
-  const { data: userProfile, isLoading } = useDoc<DocumentData>(userDocRef);
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      role: 'buyer',
+      role_id: '1', // Default to 'buyer'
     },
   });
 
   useEffect(() => {
-    if (userProfile && userProfile.roleIds && userProfile.roleIds.length > 0) {
-      form.reset({
-        role: userProfile.roleIds[0],
-      });
-    }
-  }, [userProfile, form]);
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      const { data } = await supabase.from('profiles').select('role_id').eq('id', user.id).single();
+      if (data && data.role_id) {
+        form.reset({ role_id: String(data.role_id) });
+      }
+      setIsLoading(false);
+    };
+    fetchProfile();
+  }, [user.id, supabase, form]);
 
   const onSubmit = async (values: RoleFormValues) => {
     setIsSaving(true);
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      updateDocumentNonBlocking(userRef, { roleIds: [values.role] });
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role_id: parseInt(values.role_id, 10) })
+      .eq('id', user.id);
+
+    if (error) {
+      onFeedback('error', error.message || 'Failed to update role.');
+    } else {
       onFeedback('success', 'Role updated successfully!');
-    } catch (e: any) {
-      onFeedback('error', e.message || 'Failed to update role.');
-    } finally {
-      setIsSaving(false);
     }
+    setIsSaving(false);
   };
   
   if (isLoading) {
@@ -82,7 +85,10 @@ export function AccountRoleForm({ user, onFeedback }: AccountRoleFormProps) {
     )
   }
   
-  const selectedRole = form.watch('role');
+  const selectedRole = form.watch('role_id');
+  const selectedRoleName = ['seller', 'sme', 'trainer'].includes(
+      { '2': 'seller', '3': 'sme', '4': 'trainer' }[selectedRole] || ''
+  );
 
   return (
     <Card>
@@ -95,43 +101,38 @@ export function AccountRoleForm({ user, onFeedback }: AccountRoleFormProps) {
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="role"
+              name="role_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Account Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="buyer">Buyer</SelectItem>
-                      <SelectItem value="seller">Seller</SelectItem>
-                      <SelectItem value="sme">SME Business</SelectItem>
-                      <SelectItem value="trainer">Trainer/Educator</SelectItem>
+                      <SelectItem value="1">Buyer</SelectItem>
+                      <SelectItem value="2">Seller</SelectItem>
+                      <SelectItem value="3">SME Business</SelectItem>
+                      <SelectItem value="4">Trainer/Educator</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {userProfile && !userProfile.onboardingCompleted && ['seller', 'sme', 'trainer'].includes(selectedRole) && (
-              <p className="text-sm text-yellow-600">
-                This role requires profile completion before activation.
-              </p>
-            )}
-             {['seller', 'sme', 'trainer'].includes(selectedRole) && (
+             {selectedRoleName && (
                 <Alert>
                     <Shield className="h-4 w-4" />
                     <AlertDescription>
-                    Seller roles may require KYC verification. 
+                    This role may require KYC verification. 
                     <Button 
                         variant="link" 
                         className="p-0 h-auto ml-1"
-                        onClick={() => router.push('/kyc')} // Assuming a KYC page
+                        onClick={() => router.push('/kyc')}
                     >
-                        Complete KYC verification
+                        Complete KYC verification now.
                     </Button>
                     </AlertDescription>
                 </Alert>

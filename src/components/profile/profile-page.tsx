@@ -1,6 +1,5 @@
 'use client';
-import { useState } from 'react';
-import { useFirebase } from '@/firebase';
+import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,13 +11,26 @@ import { AccountRoleForm } from './account-role-form';
 import { PreferencesForm } from './preferences-form';
 import { AccountActions } from './account-actions';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export function ProfilePage() {
-  const { user, isUserLoading } = useFirebase();
+  const [user, setUser] = useState<User | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      setIsUserLoading(false);
+    };
+    getUser();
+  }, [supabase.auth]);
 
 
   const handleFeedback = (type: 'success' | 'error', message: string) => {

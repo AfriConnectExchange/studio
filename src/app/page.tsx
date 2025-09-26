@@ -1,120 +1,60 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import SignInCard from '@/components/auth/SignInCard';
 import SignUpCard from '@/components/auth/SignUpCard';
-import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
-import OTPVerification from '@/components/auth/OTPVerification';
-import {
-  initiateEmailSignIn,
-  initiateEmailSignUp,
-  useFirebase,
-  setDocumentNonBlocking,
-  useDoc,
-  useMemoFirebase,
-} from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { Auth, RecaptchaVerifier, sendEmailVerification, signInWithPhoneNumber, User } from 'firebase/auth';
-import CheckEmailCard from '@/components/auth/CheckEmailCard';
-import { doc, DocumentData } from 'firebase/firestore';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 import { PageLoader } from '@/components/ui/loader';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: any;
-  }
-}
-
 export default function Home() {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'otp' | 'check-email'>(
-    'signin'
-  );
-  const [authMethod, setAuthMethod] = useState('email');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  
   const { toast } = useToast();
-  const { auth, user, isUserLoading, firestore } = useFirebase();
   const router = useRouter();
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<DocumentData>(userDocRef);
+  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phone: '',
     acceptTerms: false,
-    otp: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Check user session on initial load
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setIsAuthLoading(false);
+    };
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
   
   useEffect(() => {
-    if (isUserLoading || isProfileLoading) {
-      return;
+    if (!isAuthLoading && user) {
+        router.push('/marketplace');
     }
-    
-    if (user) {
-      if (user.emailVerified || user.phoneNumber) {
-        if (userProfile && userProfile.onboardingCompleted) {
-          router.push('/marketplace');
-        } else {
-           // This check prevents redirecting if we are already on a public page and no user document exists yet.
-          if (userProfile !== undefined) {
-             router.push('/onboarding');
-          }
-        }
-      } else if (!user.emailVerified && authMode !== 'check-email') {
-        // If the user object exists but the email isn't verified,
-        // force them to the email check screen. This can happen if they
-        // close the tab after registering but before verifying.
-        setAuthMode('check-email');
-      }
-    }
-  }, [user, userProfile, isUserLoading, isProfileLoading, router, authMode]);
+  }, [user, isAuthLoading, router]);
 
-
-  // This effect will run to check for email verification status.
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (user && !user.emailVerified && authMode === 'check-email') {
-      setIsVerifying(true);
-      intervalId = setInterval(async () => {
-        await user.reload();
-        const freshUser = auth.currentUser;
-        if (freshUser?.emailVerified) {
-          clearInterval(intervalId);
-          setIsVerifying(false);
-          toast({
-            title: 'Email Verified!',
-            description: 'Redirecting to complete your profile...',
-          });
-          router.push('/onboarding');
-        }
-      }, 3000); // Check every 3 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        setIsVerifying(false);
-      }
-    };
-  }, [user, auth, authMode, toast, router]);
-
-
-  const authBgImage = PlaceHolderImages.find(
-    (img) => img.id === 'auth-background'
-  );
+  const authBgImage = PlaceHolderImages.find((img) => img.id === 'auth-background');
 
   const showAlert = (
     variant: 'default' | 'destructive',
@@ -130,174 +70,102 @@ export default function Home() {
       ...prev,
       password: '',
       confirmPassword: '',
-      otp: '',
     }));
   };
-
-  const handleBackToSignIn = () => {
-    setAuthMode('signin');
-  }
-
-  const handleBackFromOtp = () => {
-    setAuthMode(authMethod === 'email' ? 'signin' : 'signup');
-  };
   
-  const createUserDocument = async (user: User, extraData = {}) => {
-    const userRef = doc(firestore, 'users', user.uid);
-    const threeMonthsFromNow = new Date();
-    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
-
-    const userData = {
-      id: user.uid,
-      email: user.email,
-      firstName: formData.name.split(' ')[0] || '',
-      lastName: formData.name.split(' ').slice(1).join(' ') || '',
-      phoneNumber: user.phoneNumber,
-      accountStatus: 'Active',
-      freeAccessExpiryDate: threeMonthsFromNow.toISOString(),
-      onboardingCompleted: false,
-      walkthroughCompleted: false, // Add this new flag
-      ...extraData,
-    };
-    
-    // This write is non-blocking and will handle its own errors.
-    setDocumentNonBlocking(userRef, userData, { merge: true });
-  }
-
-  const handleEmailLogin = async () => {
-    setIsLoading(true);
-    try {
-      const userCredential = await initiateEmailSignIn(auth, formData.email, formData.password);
-      if (userCredential.user && !userCredential.user.emailVerified) {
-        showAlert('destructive', 'Verification Needed', 'Please verify your email before logging in.');
-        await sendEmailVerification(userCredential.user);
-        setAuthMode('check-email');
-      }
-      // Successful login redirection is handled by the main effect
-    } catch (error: any) {
-      showAlert('destructive', 'Login Failed', 'Incorrect email or password.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleEmailRegistration = async () => {
     if (formData.password !== formData.confirmPassword) {
       showAlert('destructive', 'Error', 'Passwords do not match.');
       return;
     }
     if (!formData.acceptTerms) {
-      showAlert(
-        'destructive',
-        'Error',
-        'You must accept the terms and conditions.'
-      );
+      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
       return;
     }
     setIsLoading(true);
-    try {
-      const userCredential = await initiateEmailSignUp(auth, formData.email, formData.password);
-      if (userCredential && userCredential.user) {
-        await createUserDocument(userCredential.user);
-        await sendEmailVerification(userCredential.user);
-        setAuthMode('check-email');
-      }
-    } catch (error: any)
-    {
-      if (error.code === 'auth/email-already-in-use') {
-        showAlert('destructive', 'Registration Failed', 'This email is already registered. Please log in.');
-      } else {
-        showAlert('destructive', 'Registration Failed', 'An error occurred during registration.');
-      }
-    } finally {
-        setIsLoading(false);
+
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          full_name: formData.name,
+        },
+      },
+    });
+
+    if (error) {
+      showAlert('destructive', 'Registration Failed', error.message);
+    } else if (data.user) {
+        // Insert into public.profiles table
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({ id: data.user.id, full_name: formData.name, role_id: 1 }); // Default to buyer role
+
+        if (profileError) {
+             showAlert('destructive', 'Registration Failed', `Could not create user profile: ${profileError.message}`);
+             // Consider deleting the auth user if profile creation fails
+             await supabase.auth.admin.deleteUser(data.user.id);
+        } else {
+             showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
+             setAuthMode('signin');
+        }
     }
+    setIsLoading(false);
   };
 
-  const setupRecaptcha = (auth: Auth) => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: (response: any) => {},
-      });
+  const handleEmailLogin = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (error) {
+      showAlert('destructive', 'Login Failed', error.message);
     }
-    return window.recaptchaVerifier;
+    // Successful login is handled by onAuthStateChange effect
+    setIsLoading(false);
   };
   
-  const simulatePhoneAuth = async () => {
-    if (!formData.acceptTerms && authMode === 'signup') {
-       showAlert(
-        'destructive',
-        'Error',
-        'You must accept the terms and conditions.'
-      );
-      return;
-    }
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-    try {
-      const appVerifier = setupRecaptcha(auth);
-      const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
-      window.confirmationResult = confirmationResult;
-      setAuthMode('otp');
-    } catch (error: any) {
-      showAlert('destructive', 'Error', error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOTPComplete = async (otp: string) => {
-    setIsLoading(true);
-    try {
-      if (window.confirmationResult) {
-        const userCredential = await window.confirmationResult.confirm(otp);
-        if (userCredential.user) {
-            await createUserDocument(userCredential.user);
-            // Redirection to onboarding is handled by the main effect
-        }
-      } else {
-        throw new Error("No confirmation result found.");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+          redirectTo: `${window.location.origin}/auth/callback`
       }
-    } catch (error: any) {
-      showAlert('destructive', 'Error', 'Invalid OTP. Please try again.');
-    } finally {
-      setIsLoading(false);
+    });
+    if (error) {
+        showAlert('destructive', 'Google Login Failed', error.message);
+        setIsLoading(false);
     }
-  };
+    // The rest is handled by redirects and onAuthStateChange
+  }
 
-
-  const handleResendOTP = async () => {
-    showAlert('default', 'OTP Resent', 'A new OTP has been sent to your phone.');
-    await simulatePhoneAuth();
-  };
 
   const renderAuthCard = () => {
-    if (isUserLoading || (isProfileLoading && user)) {
-      return <PageLoader />
+    if (isAuthLoading || user) {
+        return <PageLoader />;
     }
-
+    
     switch (authMode) {
       case 'signin':
         return (
           <SignInCard
-            authMethod={authMethod}
-            setAuthMethod={setAuthMethod}
             formData={formData}
             setFormData={setFormData}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             isLoading={isLoading}
             handleEmailLogin={handleEmailLogin}
-            simulatePhoneAuth={simulatePhoneAuth}
-            showAlert={showAlert}
+            handleGoogleLogin={handleGoogleLogin}
             onSwitch={handleSwitchMode}
           />
         );
       case 'signup':
         return (
           <SignUpCard
-            authMethod={authMethod}
-            setAuthMethod={setAuthMethod}
             formData={formData}
             setFormData={setFormData}
             showPassword={showPassword}
@@ -306,27 +174,8 @@ export default function Home() {
             setShowConfirmPassword={setShowConfirmPassword}
             isLoading={isLoading}
             handleEmailRegistration={handleEmailRegistration}
-            simulatePhoneAuth={simulatePhoneAuth}
-            showAlert={showAlert}
+            handleGoogleLogin={handleGoogleLogin}
             onSwitch={handleSwitchMode}
-          />
-        );
-      case 'otp':
-        return (
-          <OTPVerification
-            formData={formData}
-            handleOTPComplete={handleOTPComplete}
-            handleResendOTP={handleResendOTP}
-            isLoading={isLoading}
-            onBack={handleBackFromOtp}
-          />
-        );
-      case 'check-email':
-        return (
-          <CheckEmailCard
-            email={formData.email}
-            onBack={handleBackToSignIn}
-            isVerifying={isVerifying}
           />
         );
       default:
@@ -336,7 +185,6 @@ export default function Home() {
 
   return (
     <div className="w-full bg-background">
-       <div id="recaptcha-container"></div>
       <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
           {authBgImage && (
@@ -370,7 +218,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 }

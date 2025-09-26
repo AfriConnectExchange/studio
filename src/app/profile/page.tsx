@@ -1,19 +1,34 @@
 'use client';
 import { Header } from '@/components/dashboard/header';
 import { ProfilePage } from '@/components/profile/profile-page';
-import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import { PageLoader } from '@/components/ui/loader';
 
 export default function UserProfilePage() {
-  const { user, isUserLoading } = useFirebase();
+  const [user, setUser] = useState<User | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
+    const getUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        setIsUserLoading(false);
+    };
+    getUser();
+
     if (!isUserLoading && !user) {
       router.push('/');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, supabase.auth]);
+
+   if (isUserLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">

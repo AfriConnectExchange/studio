@@ -19,11 +19,12 @@ import {
 import { FilterPanel } from '@/components/marketplace/FilterPanel';
 import { ProductGrid } from '@/components/marketplace/ProductGrid';
 import { SearchBar } from '@/components/marketplace/SearchBar';
-import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/dashboard/header';
 import { useToast } from '@/hooks/use-toast';
 import type { CartItem } from '@/components/cart/cart-page';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export interface Product {
   id: number;
@@ -58,9 +59,18 @@ export interface FilterState {
 }
 
 export default function MarketplacePage() {
-  const { user } = useFirebase();
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
+  
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    getUser();
+  }, [supabase.auth]);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);

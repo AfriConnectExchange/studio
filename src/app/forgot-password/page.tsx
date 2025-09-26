@@ -7,8 +7,11 @@ export default function ForgotPasswordPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="flex justify-center">
-          <Logo />
+        <div className="flex justify-center lg:hidden">
+          <Logo withText />
+        </div>
+        <div className="hidden lg:flex justify-center">
+            <Logo withText />
         </div>
         <ForgotPasswordForm />
         <div className="text-center text-sm">

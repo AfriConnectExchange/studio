@@ -41,31 +41,19 @@ export function ForgotPasswordForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/`,
-      });
+    
+    // Simulate the API call
+    console.log(`Simulating password reset for: ${values.email}`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast({
+      title: 'Password Reset Link Sent',
+      description:
+        'If an account exists for this email, you will receive a password reset link.',
+    });
+    setEmailSent(true);
 
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: 'Password Reset Link Sent',
-        description:
-          'If an account exists for this email, you will receive a password reset link.',
-      });
-      setEmailSent(true);
-
-    } catch (error: any) {
-       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Could not send password reset email. Please try again.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   }
 
   if(emailSent) {

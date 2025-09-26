@@ -12,8 +12,9 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { PageLoader } from '@/components/ui/loader';
 import OTPVerification from '@/components/auth/OTPVerification';
+import CheckEmailCard from '@/components/auth/CheckEmailCard';
 
-type AuthMode = 'signin' | 'signup' | 'otp';
+type AuthMode = 'signin' | 'signup' | 'otp' | 'check-email';
 
 export default function Home() {
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
@@ -39,42 +40,44 @@ export default function Home() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   useEffect(() => {
-    const checkUserAndRedirect = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user;
-      setUser(currentUser ?? null);
+    // Keep user session check disabled for simulation
+    setIsAuthLoading(false);
+    // const checkUserAndRedirect = async () => {
+    //   const { data: { session } } = await supabase.auth.getSession();
+    //   const currentUser = session?.user;
+    //   setUser(currentUser ?? null);
       
-      if (currentUser) {
-        // If user is logged in, check onboarding status and redirect
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_completed')
-          .eq('id', currentUser.id)
-          .single();
+    //   if (currentUser) {
+    //     // If user is logged in, check onboarding status and redirect
+    //     const { data: profile } = await supabase
+    //       .from('profiles')
+    //       .select('onboarding_completed')
+    //       .eq('id', currentUser.id)
+    //       .single();
 
-        if (profile?.onboarding_completed) {
-          router.push('/marketplace');
-        } else {
-          router.push('/onboarding');
-        }
-      } else {
-        setIsAuthLoading(false);
-      }
-    };
-    checkUserAndRedirect();
+    //     if (profile?.onboarding_completed) {
+    //       router.push('/marketplace');
+    //     } else {
+    //       router.push('/onboarding');
+    //     }
+    //   } else {
+    //     setIsAuthLoading(false);
+    //   }
+    // };
+    // checkUserAndRedirect();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-       const currentUser = session?.user ?? null;
-       setUser(currentUser);
-       if (!currentUser) {
-         setIsAuthLoading(false);
-       } else {
-         // When user becomes available, trigger the redirect check again
-         checkUserAndRedirect();
-       }
-    });
+    // const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    //    const currentUser = session?.user ?? null;
+    //    setUser(currentUser);
+    //    if (!currentUser) {
+    //      setIsAuthLoading(false);
+    //    } else {
+    //      // When user becomes available, trigger the redirect check again
+    //      checkUserAndRedirect();
+    //    }
+    // });
 
-    return () => subscription.unsubscribe();
+    // return () => subscription.unsubscribe();
   }, [supabase, router]);
 
 
@@ -108,93 +111,74 @@ export default function Home() {
       return;
     }
     setIsLoading(true);
+    
+    console.log("Simulating email registration with:", formData);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Registration failed.');
-      }
-      
-      showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
-      handleSwitchMode('signin');
-      
-    } catch (error: any) {
-       showAlert('destructive', 'Registration Failed', error.message);
-    }
-
+    showAlert('default', 'Registration Successful!', 'Please check your email to verify your account.');
+    handleSwitchMode('check-email');
+    
     setIsLoading(false);
   };
   
   const handlePhoneRegistration = async () => {
     // Phone registration logic is not implemented yet
-    console.log("Phone registration UI is visible but functionality is disabled for now.");
+    console.log("Simulating phone registration UI is visible but functionality is disabled for now.");
+     if (!formData.acceptTerms) {
+      showAlert('destructive', 'Error', 'You must accept the terms and conditions.');
+      return;
+    }
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
+    handleSwitchMode('otp');
   };
 
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+    
+    console.log("Simulating email login with:", formData.email);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || 'Login failed.');
-      }
-      // onAuthStateChange will handle the redirect
-      // We just need to wait for the user state to update
-      setIsAuthLoading(true);
-    } catch (error: any) {
-       showAlert('destructive', 'Login Failed', error.message);
-    }
+    showAlert('default', 'Login Successful', 'Redirecting to your dashboard...');
+    router.push('/marketplace');
+    
     setIsLoading(false);
   };
 
   const handlePhoneLogin = async () => {
     // Phone login logic is not implemented yet
-    console.log("Phone login UI is visible but functionality is disabled for now.");
+    console.log("Simulating phone login UI is visible but functionality is disabled for now.");
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
+    handleSwitchMode('otp');
   };
   
   const handleOTPComplete = async (otp: string) => {
      // OTP logic is not implemented yet
-    console.log("OTP UI is visible but functionality is disabled for now.");
+    console.log("Simulating OTP verification with:", otp);
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    showAlert('default', 'Verification Successful', 'Redirecting to your dashboard...');
+    router.push('/marketplace');
+    setIsLoading(false);
   }
 
   
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-      }
-    });
-    if (error) {
-        showAlert('destructive', 'Google Login Failed', error.message);
-        setIsLoading(false);
-    }
+    console.log("Simulating Google Login");
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    showAlert('default', 'Google Login Successful', 'Redirecting...');
+    router.push('/marketplace');
+    setIsLoading(false);
   }
 
 
   const renderAuthCard = () => {
-    if (isAuthLoading || user) {
+    if (isAuthLoading) {
         return <PageLoader />;
     }
     
@@ -237,6 +221,14 @@ export default function Home() {
                 handleResendOTP={handlePhoneLogin} // Resending OTP is the same as initial send
                 isLoading={isLoading}
                 onBack={() => handleSwitchMode('signin')}
+            />
+        );
+      case 'check-email':
+        return (
+            <CheckEmailCard
+                email={formData.email}
+                onBack={() => handleSwitchMode('signin')}
+                isVerifying={false}
             />
         );
       default:

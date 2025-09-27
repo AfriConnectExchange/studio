@@ -70,3 +70,5 @@ export function TransferDetailsModal({ isOpen, onClose, transfer }: TransferDeta
     </Dialog>
   );
 }
+
+    

@@ -110,3 +110,5 @@ export function SendMoneyModal({ isOpen, onClose, onSuccess }: SendMoneyModalPro
     </Dialog>
   );
 }
+
+    

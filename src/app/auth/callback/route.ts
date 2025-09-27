@@ -1,6 +1,7 @@
+
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createSSRClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createSSRClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       // URL to redirect to after sign in process completes

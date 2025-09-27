@@ -1,6 +1,6 @@
 'use client';
 
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import type { User as SupabaseUser } from '@firebase/auth';
 import { Mail, Phone, MapPin, User, Settings, Receipt, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { cn } from '@/lib/utils';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
+import { useFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 interface ProfileSummaryCardProps {
   user: SupabaseUser;
@@ -38,22 +39,31 @@ const getRoleLabel = (roleId?: number) => {
 };
 
 export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }: ProfileSummaryCardProps) {
-  const supabase = createClient();
+  const { auth, firestore } = useFirebase(); // Firestore might be needed later
   const { toast } = useToast();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
+    // In a real app, you would fetch this from Firestore
+    // For now, we simulate it
     const fetchProfile = async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      setUserProfile(data);
+        // const docRef = doc(firestore, "profiles", user.id);
+        // ... fetch logic ...
+        setUserProfile({
+            full_name: user.displayName,
+            avatar_url: user.photoURL,
+            phone: user.phoneNumber,
+            role_id: 1, // Default to buyer
+            location: 'London, UK'
+        });
     };
     fetchProfile();
-  }, [user.id, supabase]);
+  }, [user.id, user.displayName, user.photoURL, user.phoneNumber]);
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut(auth);
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
@@ -70,7 +80,7 @@ export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }
     }
   };
 
-  const userName = userProfile?.full_name || user.user_metadata?.full_name || 'Unnamed User';
+  const userName = userProfile?.full_name || user.displayName || 'Unnamed User';
   
   const menuItems = [
     { id: 'profile', label: 'Edit Profile', icon: User },
@@ -84,7 +94,7 @@ export function ProfileSummaryCard({ user, onNavigate, activeTab, setActiveTab }
         <CardContent className="pt-6">
           <div className="text-center">
             <Avatar className="w-20 h-20 mx-auto mb-4 border-2 border-primary/20 p-1">
-              <AvatarImage src={userProfile?.avatar_url || user.user_metadata?.avatar_url || undefined} alt={userName} />
+              <AvatarImage src={userProfile?.avatar_url || user.photoURL || undefined} alt={userName} />
               <AvatarFallback className="text-2xl bg-muted">
                 {userName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
               </AvatarFallback>

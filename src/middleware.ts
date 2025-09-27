@@ -1,8 +1,9 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { type NextRequest, NextResponse } from 'next/server'
 
+// Placeholder middleware after migrating from Supabase to Firebase.
+// This can be updated later to include Firebase session validation.
 export async function middleware(request: NextRequest) {
-    return await updateSession(request)
+    return NextResponse.next()
 }
 
 export const config = {

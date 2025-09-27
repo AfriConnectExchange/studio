@@ -1,24 +1,20 @@
+// This is a placeholder for Firebase Auth callback handling.
+// Firebase handles sessions on the client-side via its SDK,
+// so a server-side callback for session exchange like in Supabase
+// is often not necessary for basic email/password or social auth.
+// However, it can be used for server-side rendering scenarios or custom actions.
 
-'use server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-import { createSSRClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url);
+  // In a more complex flow (e.g., email action links), you'd parse params here.
+  // const mode = requestUrl.searchParams.get('mode');
+  // const oobCode = requestUrl.searchParams.get('oobCode');
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/';
-
-  if (code) {
-    const supabase = await createSSRClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      // URL to redirect to after sign in process completes
-      return NextResponse.redirect(`${origin}/auth/verify-session?next=${next}`);
-    }
-  }
-
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // Since Firebase SDK manages the session, we can usually just redirect
+  // the user to the app, where the onAuthStateChanged listener will pick up the user.
+  const redirectTo = requestUrl.origin + '/marketplace';
+  
+  return NextResponse.redirect(redirectTo);
 }

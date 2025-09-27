@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { createSPASassClient } from '@/lib/supabase/client';
+import { useFirebase } from '@/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 
@@ -10,6 +11,7 @@ export default function ForgotPasswordPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const { auth } = useFirebase();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -17,19 +19,13 @@ export default function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            const supabase = await createSPASassClient();
-            const { error } = await supabase.getSupabaseClient().auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/auth/reset-password`,
-            });
-
-            if (error) throw error;
-
+            await sendPasswordResetEmail(auth, email);
             setSuccess(true);
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
+        } catch (err: any) {
+            if (err.code === 'auth/user-not-found') {
+                 setError('No account found with this email address.');
             } else {
-                setError('An unknown error occurred');
+                setError(err.message || 'An unknown error occurred');
             }
         } finally {
             setLoading(false);
@@ -54,7 +50,7 @@ export default function ForgotPasswordPage() {
                     </p>
 
                     <div className="mt-6 text-center text-sm">
-                        <Link href="/auth/login" className="font-medium text-primary-600 hover:text-primary-500">
+                        <Link href="/auth" className="font-medium text-primary-600 hover:text-primary-500">
                             Return to login
                         </Link>
                     </div>
@@ -113,7 +109,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center text-sm">
                 <span className="text-gray-600">Remember your password?</span>
                 {' '}
-                <Link href="/auth/login" className="font-medium text-primary-600 hover:text-primary-500">
+                <Link href="/auth" className="font-medium text-primary-600 hover:text-primary-500">
                     Sign in
                 </Link>
             </div>

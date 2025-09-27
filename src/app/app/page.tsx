@@ -4,6 +4,7 @@ import { useGlobal } from '@/lib/context/GlobalContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CalendarDays, Settings, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { PageLoader } from '@/components/ui/loader';
 
 export default function DashboardContent() {
     const { loading, user } = useGlobal();
@@ -11,16 +12,18 @@ export default function DashboardContent() {
     const getDaysSinceRegistration = () => {
         if (!user?.registered_at) return 0;
         const today = new Date();
-        const diffTime = Math.abs(today.getTime() - user.registered_at.getTime());
+        const registrationDate = new Date(user.registered_at);
+        const diffTime = Math.abs(today.getTime() - registrationDate.getTime());
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <PageLoader />;
+    }
+
+    if (!user) {
+        // This can happen briefly during redirects, or if the context fails.
+        return <PageLoader />;
     }
 
     const daysSinceRegistration = getDaysSinceRegistration();

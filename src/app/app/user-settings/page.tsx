@@ -3,22 +3,27 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGlobal } from '@/lib/context/GlobalContext';
-import { createSPASassClientAuthenticated as createSPASassClient } from '@/lib/supabase/client';
 import { Key, User, CheckCircle } from 'lucide-react';
-import { MFASetup } from '@/components/MFASetup';
+import { useFirebase } from '@/firebase';
+import { updatePassword } from 'firebase/auth';
+// MFA component needs to be rewritten for Firebase. For now, we'll hide it.
+// import { MFASetup } from '@/components/MFASetup';
 
 export default function UserSettingsPage() {
     const { user } = useGlobal();
+    const { auth } = useFirebase();
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-
-
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!auth.currentUser) {
+            setError("You must be logged in to change your password.");
+            return;
+        }
         if (newPassword !== confirmPassword) {
             setError("New passwords don't match");
             return;
@@ -29,32 +34,17 @@ export default function UserSettingsPage() {
         setSuccess('');
 
         try {
-            const supabase = await createSPASassClient();
-            const client = supabase.getSupabaseClient();
-
-            const { error } = await client.auth.updateUser({
-                password: newPassword
-            });
-
-            if (error) throw error;
-
+            await updatePassword(auth.currentUser, newPassword);
             setSuccess('Password updated successfully');
             setNewPassword('');
             setConfirmPassword('');
-        } catch (err: Error | unknown) {
-            if (err instanceof Error) {
-                console.error('Error updating password:', err);
-                setError(err.message);
-            } else {
-                console.error('Error updating password:', err);
-                setError('Failed to update password');
-            }
+        } catch (err: any) {
+            console.error('Error updating password:', err);
+            setError(err.message || 'Failed to update password');
         } finally {
             setLoading(false);
         }
     };
-
-
 
     return (
         <div className="space-y-6 p-6">
@@ -146,12 +136,13 @@ export default function UserSettingsPage() {
                             </form>
                         </CardContent>
                     </Card>
-
+                    {/* 
                     <MFASetup
                         onStatusChange={() => {
                             setSuccess('Two-factor authentication settings updated successfully');
                         }}
-                    />
+                    /> 
+                    */}
                 </div>
             </div>
         </div>

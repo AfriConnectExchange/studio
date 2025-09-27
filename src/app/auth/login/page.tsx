@@ -1,135 +1,260 @@
-// src/app/auth/login/page.tsx
+
 'use client';
-
-import { createSPASassClient } from '@/lib/supabase/client';
-import {useEffect, useState} from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import SSOButtons from '@/components/SSOButtons';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithPhoneNumber,
+  RecaptchaVerifier
+} from 'firebase/auth';
 
-export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showMFAPrompt, setShowMFAPrompt] = useState(false);
-    const router = useRouter();
+import SignInCard from '@/components/auth/SignInCard';
+import SignUpCard from '@/components/auth/SignUpCard';
+import CheckEmailCard from '@/components/auth/CheckEmailCard';
+import OTPVerification from '@/components/auth/OTPVerification';
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+const containerVariants = {
+  initial: { opacity: 0, scale: 0.98 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.98 },
+};
 
-        try {
-            const client = await createSPASassClient();
-            const { error: signInError } = await client.loginEmail(email, password);
+type AuthView = 'signIn' | 'signUp' | 'checkEmail' | 'verifyOtp';
 
-            if (signInError) throw signInError;
+export default function AuthPage() {
+  const [view, setView] = useState<AuthView>('signIn');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-            // Check if MFA is required
-            const supabase = client.getSupabaseClient();
-            const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    acceptTerms: false,
+  });
 
-            if (mfaError) throw mfaError;
+  const { toast } = useToast();
+  const router = useRouter();
+  const { auth, user, isUserLoading } = useFirebase();
 
-            if (mfaData.nextLevel === 'aal2' && mfaData.nextLevel !== mfaData.currentLevel) {
-                setShowMFAPrompt(true);
-            } else {
-                router.push('/app');
-                return;
-            }
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError('An unknown error occurred');
-            }
-        } finally {
-            setLoading(false);
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/marketplace');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleError = (error: any, defaultMessage: string) => {
+    let message = defaultMessage;
+    if (error.code) {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                message = 'This email is already registered. Please sign in.';
+                break;
+            case 'auth/invalid-email':
+                message = 'Please enter a valid email address.';
+                break;
+
+            case 'auth/wrong-password':
+            case 'auth/user-not-found': // Treat as same for security
+                message = 'Incorrect email or password. Please try again.';
+                break;
+            default:
+                message = error.message;
         }
-    };
+    }
+    toast({
+      variant: 'destructive',
+      title: 'Authentication Error',
+      description: message,
+    });
+  };
 
+  const handleEmailRegistration = async () => {
+    if (!formData.acceptTerms) {
+      toast({
+        variant: 'destructive',
+        title: 'Terms not accepted',
+        description: 'You must accept the terms and policy to sign up.',
+      });
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        variant: 'destructive',
+        title: 'Passwords do not match',
+        description: 'Please ensure your passwords match.',
+      });
+      return;
+    }
 
-    useEffect(() => {
-        if(showMFAPrompt) {
-            router.push('/auth/2fa');
-        }
-    }, [showMFAPrompt, router]);
+    setIsLoading(true);
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        await sendEmailVerification(userCredential.user);
+        toast({
+            title: 'Registration Successful',
+            description: 'Please check your email to verify your account.',
+        });
+        setView('checkEmail');
+        setIsVerifying(true);
+    } catch (error: any) {
+        handleError(error, 'Failed to register.');
+    }
+    setIsLoading(false);
+  };
+  
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+      });
+    }
+    return window.recaptchaVerifier;
+  };
 
+  const handlePhoneRegistration = async () => {
+     if (!formData.acceptTerms) {
+      toast({ variant: 'destructive', title: 'Terms not accepted', description: 'You must accept the terms and policy to sign up.' });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+        const appVerifier = setupRecaptcha();
+        const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
+        window.confirmationResult = confirmationResult;
+        toast({ title: "OTP Sent", description: "A verification code has been sent to your phone." });
+        setView('verifyOtp');
+    } catch (error) {
+        handleError(error, 'Failed to send OTP');
+    }
+    setIsLoading(false);
+  }
 
-    return (
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            {error && (
-                <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                    {error}
-                </div>
-            )}
+  const handleEmailLogin = async () => {
+    setIsLoading(true);
+    try {
+        await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
+        handleError(error, 'Failed to sign in.');
+    }
+    setIsLoading(false);
+  };
+  
+  const handlePhoneLogin = async () => {
+    setIsLoading(true);
+    try {
+        const appVerifier = setupRecaptcha();
+        const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
+        window.confirmationResult = confirmationResult;
+        toast({ title: "OTP Sent", description: "A verification code has been sent to your phone." });
+        setView('verifyOtp');
+    } catch (error) {
+      handleError(error, 'Failed to send OTP.');
+    }
+    setIsLoading(false);
+  };
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email address
-                    </label>
-                    <div className="mt-1">
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500"
-                        />
-                    </div>
-                </div>
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
+        handleError(error, 'Failed to sign in with Google.');
+    }
+    setIsLoading(false);
+  };
 
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <div className="mt-1">
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="current-password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500"
-                        />
-                    </div>
-                </div>
+  const handleOTPComplete = async (otp: string) => {
+    setIsLoading(true);
+    try {
+        await window.confirmationResult.confirm(otp);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
+      handleError(error, 'Invalid OTP provided.');
+    }
+    setIsLoading(false);
+  };
 
-                <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                        <Link href="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                            Forgot your password?
-                        </Link>
-                    </div>
-                </div>
+  const handleResendOTP = async () => {
+    await handlePhoneLogin();
+  };
 
-                <div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex w-full justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
-                    >
-                        {loading ? 'Signing in...' : 'Sign in'}
-                    </button>
-                </div>
-            </form>
+  const handleBack = () => {
+    if (view === 'checkEmail' || view === 'verifyOtp') {
+      setView('signIn');
+    }
+  };
 
-            <SSOButtons onError={setError} />
-
-            <div className="mt-6 text-center text-sm">
-                <span className="text-gray-600">Don&#39;t have an account?</span>
-                {' '}
-                <Link href="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
-                    Sign up
-                </Link>
-            </div>
-        </div>
-    );
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <div id="recaptcha-container"></div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={view}
+          variants={containerVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.3 }}
+          className="w-full max-w-lg"
+        >
+          {view === 'signIn' && (
+            <SignInCard
+              formData={formData}
+              setFormData={setFormData}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              isLoading={isLoading}
+              handleEmailLogin={handleEmailLogin}
+              handleGoogleLogin={handleGoogleLogin}
+              onSwitch={() => setView('signUp')}
+              handlePhoneLogin={handlePhoneLogin}
+            />
+          )}
+          {view === 'signUp' && (
+            <SignUpCard
+              formData={formData}
+              setFormData={setFormData}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              showConfirmPassword={showConfirmPassword}
+              setShowConfirmPassword={setShowConfirmPassword}
+              isLoading={isLoading}
+              handleEmailRegistration={handleEmailRegistration}
+              handleGoogleLogin={handleGoogleLogin}
+              onSwitch={() => setView('signIn')}
+              handlePhoneRegistration={handlePhoneRegistration}
+            />
+          )}
+          {view === 'checkEmail' && (
+            <CheckEmailCard email={formData.email} onBack={handleBack} isVerifying={isVerifying} />
+          )}
+          {view === 'verifyOtp' && (
+            <OTPVerification
+              formData={formData}
+              handleOTPComplete={handleOTPComplete}
+              handleResendOTP={handleResendOTP}
+              isLoading={isLoading}
+              onBack={handleBack}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </main>
+  );
 }

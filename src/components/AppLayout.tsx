@@ -12,7 +12,8 @@ import {
     Key, Files, LucideListTodo,
 } from 'lucide-react';
 import { useGlobal } from "@/lib/context/GlobalContext";
-import { createSPASassClient } from "@/lib/supabase/client";
+import { useFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -20,22 +21,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
 
-
     const { user } = useGlobal();
+    const { auth } = useFirebase();
 
     const handleLogout = async () => {
         try {
-            const client = await createSPASassClient();
-            await client.logout();
+            await signOut(auth);
+            router.push('/');
         } catch (error) {
             console.error('Error logging out:', error);
         }
     };
+    
     const handleChangePassword = async () => {
         router.push('/app/user-settings')
     };
 
     const getInitials = (email: string) => {
+        if (!email) return '??';
         const parts = email.split('@')[0].split(/[._-]/);
         return parts.length > 1
             ? (parts[0][0] + parts[1][0]).toUpperCase()

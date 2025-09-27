@@ -2,9 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useGlobal } from '@/lib/context/GlobalContext';
-import {
-    createSPASassClientAuthenticated as createSPASassClient
-} from '@/lib/supabase/client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -20,13 +17,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, Loader2, Plus, Trash2, AlertCircle } from 'lucide-react';
 import Confetti from '@/components/Confetti';
 
-import { Database } from '@/lib/types';
-
-type Task = Database['public']['Tables']['todo_list']['Row'];
-type NewTask = Database['public']['Tables']['todo_list']['Insert'];
+// Mock types since we removed the Supabase `Database` type
+type Task = {
+    id: number;
+    title: string;
+    description: string | null;
+    done: boolean;
+    urgent: boolean;
+    owner: string;
+    created_at: string;
+};
+type NewTask = Omit<Task, 'id' | 'created_at'>;
 
 interface CreateTaskDialogProps {
-    onTaskCreated: () => Promise<void>;
+    onTaskCreated: (newTask: Task) => void;
 }
 
 function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
@@ -42,31 +46,25 @@ function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
         e.preventDefault();
         if (!newTaskTitle.trim() || !user?.id) return;
 
-        try {
-            setLoading(true);
-            const supabase = await createSPASassClient();
-            const newTask: NewTask = {
+        setLoading(true);
+        // Simulate adding a task
+        setTimeout(() => {
+            const newTask: Task = {
+                id: Date.now(),
                 title: newTaskTitle.trim(),
                 description: newTaskDescription.trim() || null,
                 urgent: isUrgent,
                 owner: user.id,
-                done: false
+                done: false,
+                created_at: new Date().toISOString(),
             };
-
-            const { error: supabaseError } = await supabase.createTask(newTask);
-            if (supabaseError) throw supabaseError;
-
+            onTaskCreated(newTask);
             setNewTaskTitle('');
             setNewTaskDescription('');
             setIsUrgent(false);
             setOpen(false);
-            await onTaskCreated();
-        } catch (err) {
-            setError('Failed to add task');
-            console.error('Error adding task:', err);
-        } finally {
             setLoading(false);
-        }
+        }, 500);
     };
 
     return (
@@ -145,50 +143,40 @@ export default function TaskManagementPage() {
         }
     }, [filter, user?.id]);
 
-    const loadTasks = async (): Promise<void> => {
-        try {
-            const isFirstLoad = initialLoading;
-            if (!isFirstLoad) setLoading(true);
+    const loadTasks = (): void => {
+        const isFirstLoad = initialLoading;
+        if (!isFirstLoad) setLoading(true);
 
-            const supabase = await createSPASassClient();
-            const { data, error: supabaseError } = await supabase.getMyTodoList(1, 100, 'created_at', filter);
+        // Simulate fetching tasks
+        setTimeout(() => {
+            let mockTasks: Task[] = [
+                { id: 1, title: 'Finish Q3 report', description: 'Compile sales data and create presentation slides.', done: false, urgent: true, owner: user!.id, created_at: new Date().toISOString() },
+                { id: 2, title: 'Schedule team meeting', description: 'Find a suitable time for the weekly sync.', done: false, urgent: false, owner: user!.id, created_at: new Date().toISOString() },
+                { id: 3, title: 'Buy groceries', description: 'Milk, bread, and eggs.', done: true, urgent: false, owner: user!.id, created_at: new Date().toISOString() },
+            ];
 
-            if (supabaseError) throw supabaseError;
-            setTasks(data || []);
-        } catch (err) {
-            setError('Failed to load tasks');
-            console.error('Error loading tasks:', err);
-        } finally {
+            if (filter !== null) {
+                mockTasks = mockTasks.filter(t => t.done === filter);
+            }
+            
+            setTasks(mockTasks);
             setLoading(false);
             setInitialLoading(false);
-        }
+        }, 500);
     };
 
-    const handleRemoveTask = async (id: number): Promise<void> => {
-        try {
-            const supabase = await createSPASassClient();
-            const { error: supabaseError } = await supabase.removeTask(id.toString());
-            if (supabaseError) throw supabaseError;
-            await loadTasks();
-        } catch (err) {
-            setError('Failed to remove task');
-            console.error('Error removing task:', err);
-        }
+    const handleTaskCreated = (newTask: Task) => {
+        setTasks(prev => [newTask, ...prev]);
     };
 
-    const handleMarkAsDone = async (id: number): Promise<void> => {
-        try {
-            const supabase = await createSPASassClient();
-            const { error: supabaseError } = await supabase.updateAsDone(id.toString());
-            if (supabaseError) throw supabaseError;
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 2000);
+    const handleRemoveTask = (id: number): void => {
+        setTasks(prev => prev.filter(t => t.id !== id));
+    };
 
-            await loadTasks();
-        } catch (err) {
-            setError('Failed to update task');
-            console.error('Error updating task:', err);
-        }
+    const handleMarkAsDone = (id: number): void => {
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t));
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 2000);
     };
 
     if (initialLoading) {
@@ -207,7 +195,7 @@ export default function TaskManagementPage() {
                         <CardTitle>Task Management</CardTitle>
                         <CardDescription>Manage your tasks and to-dos</CardDescription>
                     </div>
-                    <CreateTaskDialog onTaskCreated={loadTasks} />
+                    <CreateTaskDialog onTaskCreated={handleTaskCreated} />
                 </CardHeader>
                 <CardContent>
                     {error && (

@@ -1,11 +1,12 @@
 // src/lib/context/GlobalContext.tsx
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { createSPASassClientAuthenticated as createSPASassClient } from '@/lib/supabase/client';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useFirebase } from '@/firebase';
+import type { User as FirebaseUser } from 'firebase/auth';
 
-
-type User = {
+// Define a simpler user type for the context
+type AppUser = {
     email: string;
     id: string;
     registered_at: Date;
@@ -13,45 +14,36 @@ type User = {
 
 interface GlobalContextType {
     loading: boolean;
-    user: User | null;  // Add this
+    user: AppUser | null;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export function GlobalProvider({ children }: { children: React.ReactNode }) {
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState<User | null>(null);  // Add this
+export function GlobalProvider({ children }: { children: ReactNode }) {
+    const { user: firebaseUser, isUserLoading } = useFirebase();
+    const [appUser, setAppUser] = useState<AppUser | null>(null);
 
     useEffect(() => {
-        async function loadData() {
-            try {
-                const supabase = await createSPASassClient();
-                const client = supabase.getSupabaseClient();
-
-                // Get user data
-                const { data: { user } } = await client.auth.getUser();
-                if (user) {
-                    setUser({
-                        email: user.email!,
-                        id: user.id,
-                        registered_at: new Date(user.created_at)
-                    });
-                } else {
-                    throw new Error('User not found');
-                }
-
-            } catch (error) {
-                console.error('Error loading data:', error);
-            } finally {
-                setLoading(false);
+        if (!isUserLoading) {
+            if (firebaseUser) {
+                setAppUser({
+                    email: firebaseUser.email!,
+                    id: firebaseUser.uid,
+                    registered_at: new Date(firebaseUser.metadata.creationTime || Date.now())
+                });
+            } else {
+                setAppUser(null);
             }
         }
+    }, [firebaseUser, isUserLoading]);
 
-        loadData();
-    }, []);
+    const value = {
+        loading: isUserLoading,
+        user: appUser,
+    };
 
     return (
-        <GlobalContext.Provider value={{ loading, user }}>
+        <GlobalContext.Provider value={value}>
             {children}
         </GlobalContext.Provider>
     );

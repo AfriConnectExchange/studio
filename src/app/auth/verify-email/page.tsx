@@ -2,30 +2,26 @@
 
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import {useState} from "react";
-import {createSPASassClient} from "@/lib/supabase/client";
+import { useState } from 'react';
+import { useFirebase } from '@/firebase';
+import { sendEmailVerification } from 'firebase/auth';
 
 export default function VerifyEmailPage() {
-    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const { auth } = useFirebase();
 
     const resendVerificationEmail = async () => {
-        if (!email) {
-            setError('Please enter your email address');
+        if (!auth.currentUser) {
+            setError('You must be logged in to resend a verification email.');
             return;
         }
 
         try {
             setLoading(true);
             setError('');
-            const supabase = await createSPASassClient();
-            const {error} = await supabase.resendVerificationEmail(email);
-            if(error) {
-                setError(error.message);
-                return;
-            }
+            await sendEmailVerification(auth.currentUser);
             setSuccess(true);
         } catch (err: Error | unknown) {
             if (err instanceof Error) {
@@ -56,7 +52,7 @@ export default function VerifyEmailPage() {
 
                 <div className="space-y-4">
                     <p className="text-sm text-gray-500">
-                        Didn&#39;t receive the email? Check your spam folder or enter your email to resend:
+                        Didn&#39;t receive the email? Check your spam folder or click to resend.
                     </p>
 
                     {error && (
@@ -70,16 +66,6 @@ export default function VerifyEmailPage() {
                             Verification email has been resent successfully.
                         </div>
                     )}
-
-                    <div className="mt-4">
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email address"
-                            className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm"
-                        />
-                    </div>
 
                     <button
                         className="text-primary-600 hover:text-primary-500 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"

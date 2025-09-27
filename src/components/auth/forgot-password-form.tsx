@@ -22,7 +22,8 @@ import {
 import { Mail, MailCheck } from 'lucide-react';
 import { useState } from 'react';
 import { AnimatedButton } from '../ui/animated-button';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
+import { useFirebase } from '@/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -30,7 +31,7 @@ const formSchema = z.object({
 
 export function ForgotPasswordForm() {
   const { toast } = useToast();
-  const supabase = createClient();
+  const { auth } = useFirebase();
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -42,18 +43,23 @@ export function ForgotPasswordForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     
-    // Simulate the API call
-    console.log(`Simulating password reset for: ${values.email}`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: 'Password Reset Link Sent',
-      description:
-        'If an account exists for this email, you will receive a password reset link.',
-    });
-    setEmailSent(true);
-
-    setIsLoading(false);
+    try {
+        await sendPasswordResetEmail(auth, values.email);
+        toast({
+          title: 'Password Reset Link Sent',
+          description:
+            'If an account exists for this email, you will receive a password reset link.',
+        });
+        setEmailSent(true);
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: error.message || 'Failed to send password reset email.'
+        })
+    } finally {
+        setIsLoading(false);
+    }
   }
 
   if(emailSent) {

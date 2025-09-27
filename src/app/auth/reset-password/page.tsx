@@ -1,35 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createSPASassClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
-import { CheckCircle, Key } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useFirebase } from '@/firebase';
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle, Key, AlertTriangle } from 'lucide-react';
+import { PageLoader } from '@/components/ui/loader';
 
-export default function ResetPasswordPage() {
+function ResetPasswordComponent() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [verifying, setVerifying] = useState(true);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const { auth } = useFirebase();
 
-    // Check if we have a valid recovery session
+    const oobCode = searchParams.get('oobCode');
+
     useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const supabase = await createSPASassClient();
-                const { data: { user }, error } = await supabase.getSupabaseClient().auth.getUser();
+        if (!oobCode) {
+            setError('Invalid or missing password reset code.');
+            setVerifying(false);
+            return;
+        }
 
-                if (error || !user) {
-                    setError('Invalid or expired reset link. Please request a new password reset.');
-                }
-            } catch {
-                setError('Failed to verify reset session');
-            }
-        };
-
-        checkSession();
-    }, []);
+        verifyPasswordResetCode(auth, oobCode)
+            .then(() => {
+                setVerifying(false);
+            })
+            .catch(() => {
+                setError('Invalid or expired password reset link. Please request a new one.');
+                setVerifying(false);
+            });
+    }, [oobCode, auth]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,19 +51,18 @@ export default function ResetPasswordPage() {
             return;
         }
 
+        if (!oobCode) {
+            setError('Missing password reset code.');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const supabase = await createSPASassClient();
-            const { error } = await supabase.getSupabaseClient().auth.updateUser({
-                password: newPassword
-            });
-
-            if (error) throw error;
-
+            await confirmPasswordReset(auth, oobCode, newPassword);
             setSuccess(true);
             setTimeout(() => {
-                router.push('/app');
+                router.push('/auth/login');
             }, 3000);
         } catch (err) {
             if (err instanceof Error) {
@@ -70,6 +75,20 @@ export default function ResetPasswordPage() {
         }
     };
 
+    if (verifying) {
+        return <PageLoader />;
+    }
+    
+    if (error && !success) {
+      return (
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4"/>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Invalid Link</h2>
+            <p className="text-red-600">{error}</p>
+        </div>
+      )
+    }
+
     if (success) {
         return (
             <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
@@ -77,14 +96,12 @@ export default function ResetPasswordPage() {
                     <div className="flex justify-center mb-4">
                         <CheckCircle className="h-16 w-16 text-green-500" />
                     </div>
-
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">
                         Password reset successful
                     </h2>
-
                     <p className="text-gray-600 mb-8">
                         Your password has been successfully reset.
-                        You will be redirected to the app in a moment.
+                        You will be redirected to the login page in a moment.
                     </p>
                 </div>
             </div>
@@ -101,13 +118,6 @@ export default function ResetPasswordPage() {
                     Create new password
                 </h2>
             </div>
-
-            {error && (
-                <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                    {error}
-                </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
@@ -160,4 +170,12 @@ export default function ResetPasswordPage() {
             </form>
         </div>
     );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<PageLoader />}>
+            <ResetPasswordComponent />
+        </Suspense>
+    )
 }

@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import {
@@ -22,7 +23,8 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
+import { useFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface HeaderProps {
@@ -31,28 +33,11 @@ interface HeaderProps {
 
 export function Header({ cartCount = 0 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { auth, user } = useFirebase();
   const pathname = usePathname();
   const router = useRouter();
   const [isCartAnimating, setIsCartAnimating] = useState(false);
-  const supabase = createClient();
   
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    checkUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [supabase.auth]);
-
   useEffect(() => {
     if (cartCount > 0) {
       setIsCartAnimating(true);
@@ -62,7 +47,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
   }, [cartCount]);
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut(auth);
     router.push('/');
   }
 

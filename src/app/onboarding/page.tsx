@@ -4,41 +4,20 @@ import { OnboardingFlow } from '@/components/onboarding/onboarding-flow';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PageLoader } from '@/components/ui/loader';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { useFirebase } from '@/firebase';
 
 
 export default function OnboardingPage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [isUserLoading, setIsUserLoading] = useState(true);
+    const { user, isUserLoading } = useFirebase();
     const router = useRouter();
-    const supabase = createClient();
 
     useEffect(() => {
-        const checkUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-
-            if (!user) {
-                router.push('/');
-                return;
-            }
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('onboarding_completed')
-                .eq('id', user.id)
-                .single();
-
-            if (profile?.onboarding_completed) {
-                router.push('/marketplace');
-            } else {
-                setIsUserLoading(false);
-            }
-        };
-
-        checkUser();
-    }, [supabase, router]);
+        // We will add logic here later to check if onboarding is complete
+        // and redirect to /marketplace if it is.
+        if (!isUserLoading && !user) {
+            router.push('/auth');
+        }
+    }, [user, isUserLoading, router]);
 
     if(isUserLoading || !user) {
          return <PageLoader />;

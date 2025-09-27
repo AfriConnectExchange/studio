@@ -4,8 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { createSPASassClient } from '@/lib/supabase/client';
-import type { AuthError } from '@supabase/supabase-js';
+import { useFirebase } from '@/firebase';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithPhoneNumber,
+  RecaptchaVerifier
+} from 'firebase/auth';
 
 import SignInCard from '@/components/auth/SignInCard';
 import SignUpCard from '@/components/auth/SignUpCard';
@@ -38,41 +46,39 @@ export default function AuthPage() {
 
   const { toast } = useToast();
   const router = useRouter();
-  
+  const { auth, user, isUserLoading } = useFirebase();
+
   useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-        const supabase = await createSPASassClient();
-        const client = supabase.getSupabaseClient();
-        const { data: { session } } = await client.auth.getSession();
-        if (session) {
-            router.push('/marketplace');
-        }
-
-        const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
-          if (event === "PASSWORD_RECOVERY") {
-            router.push('/forgot-password');
-          }
-          if (event === "SIGNED_IN") {
-            router.push('/auth/verify-session');
-          }
-          if (event === "USER_UPDATED" && isVerifying) {
-            setIsVerifying(false);
-            toast({ title: "Email verified!", description: "You can now sign in." });
-            setView('signIn');
-          }
-        });
-
-        return () => subscription.unsubscribe();
+    if (!isUserLoading && user) {
+      router.push('/marketplace');
     }
-    checkAuthAndRedirect();
-  }, [router, isVerifying, toast]);
+  }, [user, isUserLoading, router]);
 
+  const handleError = (error: any, defaultMessage: string) => {
+    let message = defaultMessage;
+    if (error.code) {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                message = 'This email is already registered. Please sign in.';
+                break;
+            case 'auth/invalid-email':
+                message = 'Please enter a valid email address.';
+                break;
 
-  const handleError = (error: AuthError, defaultMessage: string) => {
+            case 'auth/wrong-password':
+                message = 'Incorrect password. Please try again.';
+                break;
+            case 'auth/user-not-found':
+                message = 'No account found with this email. Please sign up.';
+                break;
+            default:
+                message = error.message;
+        }
+    }
     toast({
       variant: 'destructive',
       title: 'Authentication Error',
-      description: error.message || defaultMessage,
+      description: message,
     });
   };
 
@@ -95,22 +101,30 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const { error } = await supabase.registerEmail(formData.email, formData.password);
-    
-    if (error) {
-        handleError(error, 'Failed to register.');
-    } else {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        await sendEmailVerification(userCredential.user);
         toast({
             title: 'Registration Successful',
             description: 'Please check your email to verify your account.',
         });
         setView('checkEmail');
         setIsVerifying(true);
+    } catch (error: any) {
+        handleError(error, 'Failed to register.');
     }
     setIsLoading(false);
   };
   
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+      });
+    }
+    return window.recaptchaVerifier;
+  };
+
   const handlePhoneRegistration = async () => {
      if (!formData.acceptTerms) {
       toast({ variant: 'destructive', title: 'Terms not accepted', description: 'You must accept the terms and policy to sign up.' });
@@ -118,89 +132,63 @@ export default function AuthPage() {
     }
     
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const client = supabase.getSupabaseClient();
-
-    const { error } = await client.auth.signInWithOtp({
-      phone: formData.phone,
-       options: {
-        data: {
-          full_name: formData.name,
-        },
-      },
-    });
-
-    if (error) {
-        handleError(error, 'Failed to send OTP');
-    } else {
+    try {
+        const appVerifier = setupRecaptcha();
+        const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
+        window.confirmationResult = confirmationResult;
         toast({ title: "OTP Sent", description: "A verification code has been sent to your phone." });
         setView('verifyOtp');
+    } catch (error) {
+        handleError(error, 'Failed to send OTP');
     }
     setIsLoading(false);
   }
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const { error } = await supabase.loginEmail(formData.email, formData.password);
-
-    if (error) {
-      handleError(error, 'Failed to sign in.');
+    try {
+        await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
+        handleError(error, 'Failed to sign in.');
     }
-    // SIGNED_IN event will handle redirect
     setIsLoading(false);
   };
   
   const handlePhoneLogin = async () => {
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const client = supabase.getSupabaseClient();
-
-    const { error } = await client.auth.signInWithOtp({
-      phone: formData.phone,
-    });
-
-    if (error) {
-      handleError(error, 'Failed to send OTP.');
-    } else {
+    try {
+        const appVerifier = setupRecaptcha();
+        const confirmationResult = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
+        window.confirmationResult = confirmationResult;
         toast({ title: "OTP Sent", description: "A verification code has been sent to your phone." });
         setView('verifyOtp');
+    } catch (error) {
+      handleError(error, 'Failed to send OTP.');
     }
     setIsLoading(false);
   };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const client = supabase.getSupabaseClient();
-
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) {
-      handleError(error, 'Failed to sign in with Google.');
+    try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
+        handleError(error, 'Failed to sign in with Google.');
     }
-    // Browser will redirect, so no need to setLoading(false)
+    setIsLoading(false);
   };
 
   const handleOTPComplete = async (otp: string) => {
     setIsLoading(true);
-    const supabase = await createSPASassClient();
-    const client = supabase.getSupabaseClient();
-
-    const { error } = await client.auth.verifyOtp({
-      phone: formData.phone,
-      token: otp,
-      type: 'sms',
-    });
-
-    if (error) {
+    try {
+        await window.confirmationResult.confirm(otp);
+        // Successful sign in is handled by the auth state listener
+    } catch (error) {
       handleError(error, 'Invalid OTP provided.');
     }
-    // SIGNED_IN event will handle redirect
     setIsLoading(false);
   };
 
@@ -216,6 +204,7 @@ export default function AuthPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <div id="recaptcha-container"></div>
       <AnimatePresence mode="wait">
         <motion.div
           key={view}

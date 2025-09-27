@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/next';
 import CookieConsent from "@/components/Cookies";
-import { GoogleAnalytics } from '@next/third-parties/google'
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { FirebaseClientProvider } from "@/firebase/client-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 
 export const metadata: Metadata = {
@@ -23,13 +25,15 @@ export default function RootLayout({
   return (
     <html lang="en">
     <body className={theme}>
-      {children}
-      <Analytics />
-      <CookieConsent />
-      { gaID && (
-          <GoogleAnalytics gaId={gaID}/>
-      )}
-
+      <FirebaseClientProvider>
+        {children}
+        <Analytics />
+        <CookieConsent />
+        { gaID && (
+            <GoogleAnalytics gaId={gaID}/>
+        )}
+        <Toaster />
+      </FirebaseClientProvider>
     </body>
     </html>
   );

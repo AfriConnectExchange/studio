@@ -1,13 +1,4 @@
-'use client';
 
-// This file is no longer the primary service entry point.
-// It is kept for any legacy components that might still reference it.
-// New components should use the Supabase client directly from @/lib/supabase/client.
-
-// The Firebase-related exports are commented out to prevent accidental use.
-// They can be removed once all components are migrated to Supabase.
-
-/*
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
@@ -47,15 +38,20 @@ export function getSdks(firebaseApp: FirebaseApp) {
     firestore: getFirestore(firebaseApp)
   };
 }
-*/
 
-// export * from './provider';
-// export * from './client-provider';
-// export * from './firestore/use-collection';
-// export * from './firestore/use-doc';
-// export * from './non-blocking-updates';
-// export * from './non-blocking-login';
-// export * from './errors';
-// export * from './error-emitter';
+export * from './provider';
+export * from './client-provider';
+export * from './firestore/use-collection';
+export * from './firestore/use-doc';
+export * from './non-blocking-updates';
+export * from './non-blocking-login';
+export * from './errors';
+export * from './error-emitter';
 
-console.log("Firebase services have been deprecated in favor of Supabase.");
+// This is a global declaration to extend the Window interface
+declare global {
+  interface Window {
+    recaptchaVerifier: any;
+    confirmationResult: any;
+  }
+}

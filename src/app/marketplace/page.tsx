@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
@@ -23,8 +24,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/dashboard/header';
 import { useToast } from '@/hooks/use-toast';
 import type { CartItem } from '@/components/cart/cart-page';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { useFirebase } from '@/firebase';
 
 export interface Product {
   id: number;
@@ -59,19 +59,10 @@ export interface FilterState {
 }
 
 export default function MarketplacePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
   
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-    getUser();
-  }, [supabase.auth]);
-
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');

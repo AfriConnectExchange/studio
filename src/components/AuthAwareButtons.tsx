@@ -1,30 +1,21 @@
 
 "use client";
 import { useState, useEffect } from 'react';
-import { createSPASassClient } from '@/lib/supabase/client';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import Link from "next/link";
-import { createSPAClient as createClient } from '@/lib/supabase/client';
+import { useFirebase } from '@/firebase';
 
 export default function AuthAwareButtons({ variant = 'primary' }) {
+    const { user, isUserLoading } = useFirebase();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const supabase = createClient();
-                const { data: { user } } = await supabase.auth.getUser();
-                setIsAuthenticated(!!user);
-            } catch (error) {
-                console.error('Error checking auth status:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, []);
+        if (!isUserLoading) {
+            setIsAuthenticated(!!user);
+            setLoading(false);
+        }
+    }, [user, isUserLoading]);
 
     if (loading) {
         return null;
@@ -82,4 +73,3 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
         </>
     );
 }
-

@@ -1,30 +1,21 @@
+
 'use client';
 import { KycFlow } from '@/components/kyc/kyc-flow';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Header } from '@/components/dashboard/header';
 import { PageLoader } from '@/components/ui/loader';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { useFirebase } from '@/firebase';
 
 export default function KycPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
+  const { user, isUserLoading } = useFirebase();
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
-     const getUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        setIsUserLoading(false);
-    };
-    getUser();
-    
     if (!isUserLoading && !user) {
       router.push('/');
     }
-  }, [user, isUserLoading, router, supabase.auth]);
+  }, [user, isUserLoading, router]);
 
   if (isUserLoading || !user) {
     return <PageLoader />;

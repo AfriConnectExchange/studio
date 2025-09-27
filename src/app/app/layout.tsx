@@ -1,11 +1,8 @@
 // src/app/app/layout.tsx
 import AppLayout from '@/components/AppLayout';
-import { GlobalProvider } from '@/lib/context/GlobalContext';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    return (
-        <GlobalProvider>
-            <AppLayout>{children}</AppLayout>
-        </GlobalProvider>
-    );
+    // The FirebaseProvider in the root layout already provides the context.
+    // No need for a redundant GlobalProvider here.
+    return <AppLayout>{children}</AppLayout>;
 }

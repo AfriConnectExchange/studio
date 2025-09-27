@@ -11,8 +11,7 @@ import {
     LogOut,
     Key, Files, LucideListTodo,
 } from 'lucide-react';
-import { useGlobal } from "@/lib/context/GlobalContext";
-import { useFirebase } from '@/firebase';
+import { useFirebase } from "@/firebase";
 import { signOut } from 'firebase/auth';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -21,8 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
 
-    const { user } = useGlobal();
-    const { auth } = useFirebase();
+    const { user, auth } = useFirebase();
 
     const handleLogout = async () => {
         try {
@@ -37,7 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.push('/app/user-settings')
     };
 
-    const getInitials = (email: string) => {
+    const getInitials = (email: string | null) => {
         if (!email) return '??';
         const parts = email.split('@')[0].split(/[._-]/);
         return parts.length > 1

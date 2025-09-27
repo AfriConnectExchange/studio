@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useGlobal } from '@/lib/context/GlobalContext';
+import { useFirebase } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ interface CreateTaskDialogProps {
 }
 
 function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
-    const { user } = useGlobal();
+    const { user } = useFirebase();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
@@ -44,7 +44,7 @@ function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
 
     const handleAddTask = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!newTaskTitle.trim() || !user?.id) return;
+        if (!newTaskTitle.trim() || !user?.uid) return;
 
         setLoading(true);
         // Simulate adding a task
@@ -54,7 +54,7 @@ function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
                 title: newTaskTitle.trim(),
                 description: newTaskDescription.trim() || null,
                 urgent: isUrgent,
-                owner: user.id,
+                owner: user.uid,
                 done: false,
                 created_at: new Date().toISOString(),
             };
@@ -129,7 +129,7 @@ function CreateTaskDialog({ onTaskCreated }: CreateTaskDialogProps) {
 }
 
 export default function TaskManagementPage() {
-    const { user } = useGlobal();
+    const { user } = useFirebase();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [initialLoading, setInitialLoading] = useState<boolean>(true);
@@ -138,10 +138,10 @@ export default function TaskManagementPage() {
     const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
     useEffect(() => {
-        if (user?.id) {
+        if (user?.uid) {
             loadTasks();
         }
-    }, [filter, user?.id]);
+    }, [filter, user?.uid]);
 
     const loadTasks = (): void => {
         const isFirstLoad = initialLoading;
@@ -150,9 +150,9 @@ export default function TaskManagementPage() {
         // Simulate fetching tasks
         setTimeout(() => {
             let mockTasks: Task[] = [
-                { id: 1, title: 'Finish Q3 report', description: 'Compile sales data and create presentation slides.', done: false, urgent: true, owner: user!.id, created_at: new Date().toISOString() },
-                { id: 2, title: 'Schedule team meeting', description: 'Find a suitable time for the weekly sync.', done: false, urgent: false, owner: user!.id, created_at: new Date().toISOString() },
-                { id: 3, title: 'Buy groceries', description: 'Milk, bread, and eggs.', done: true, urgent: false, owner: user!.id, created_at: new Date().toISOString() },
+                { id: 1, title: 'Finish Q3 report', description: 'Compile sales data and create presentation slides.', done: false, urgent: true, owner: user!.uid, created_at: new Date().toISOString() },
+                { id: 2, title: 'Schedule team meeting', description: 'Find a suitable time for the weekly sync.', done: false, urgent: false, owner: user!.uid, created_at: new Date().toISOString() },
+                { id: 3, title: 'Buy groceries', description: 'Milk, bread, and eggs.', done: true, urgent: false, owner: user!.uid, created_at: new Date().toISOString() },
             ];
 
             if (filter !== null) {

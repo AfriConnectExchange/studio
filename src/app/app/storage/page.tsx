@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { useGlobal } from '@/lib/context/GlobalContext';
+import { useFirebase } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -21,7 +21,7 @@ type FileObject = {
 
 
 export default function FileManagementPage() {
-    const { user } = useGlobal();
+    const { user } = useFirebase();
     const [files, setFiles] = useState<FileObject[]>([]);
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function FileManagementPage() {
     const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
-        if (user?.id) {
+        if (user?.uid) {
             loadFiles();
         }
     }, [user]);

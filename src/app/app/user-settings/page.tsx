@@ -2,15 +2,12 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useGlobal } from '@/lib/context/GlobalContext';
-import { Key, User, CheckCircle } from 'lucide-react';
 import { useFirebase } from '@/firebase';
+import { Key, User, CheckCircle } from 'lucide-react';
 import { updatePassword } from 'firebase/auth';
-// MFA component needs to be rewritten for Firebase. For now, we'll hide it.
-// import { MFASetup } from '@/components/MFASetup';
 
 export default function UserSettingsPage() {
-    const { user } = useGlobal();
+    const { user } = useFirebase();
     const { auth } = useFirebase();
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,7 +78,7 @@ export default function UserSettingsPage() {
                         <CardContent className="space-y-4">
                             <div>
                                 <label className="text-sm font-medium text-gray-500">User ID</label>
-                                <p className="mt-1 text-sm">{user?.id}</p>
+                                <p className="mt-1 text-sm">{user?.uid}</p>
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Email</label>
@@ -137,11 +134,7 @@ export default function UserSettingsPage() {
                         </CardContent>
                     </Card>
                     {/* 
-                    <MFASetup
-                        onStatusChange={() => {
-                            setSuccess('Two-factor authentication settings updated successfully');
-                        }}
-                    /> 
+                    MFA component needs to be re-written for Firebase
                     */}
                 </div>
             </div>

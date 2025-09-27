@@ -1,23 +1,23 @@
 "use client";
 import React from 'react';
-import { useGlobal } from '@/lib/context/GlobalContext';
+import { useFirebase } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CalendarDays, Settings, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { PageLoader } from '@/components/ui/loader';
 
 export default function DashboardContent() {
-    const { loading, user } = useGlobal();
+    const { user, isUserLoading } = useFirebase();
 
     const getDaysSinceRegistration = () => {
-        if (!user?.registered_at) return 0;
+        if (!user?.metadata.creationTime) return 0;
         const today = new Date();
-        const registrationDate = new Date(user.registered_at);
+        const registrationDate = new Date(user.metadata.creationTime);
         const diffTime = Math.abs(today.getTime() - registrationDate.getTime());
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
-    if (loading) {
+    if (isUserLoading) {
         return <PageLoader />;
     }
 

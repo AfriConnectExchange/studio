@@ -1,8 +1,10 @@
+
 "use client";
 import { useState, useEffect } from 'react';
 import { createSPASassClient } from '@/lib/supabase/client';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import Link from "next/link";
+import { createSPAClient as createClient } from '@/lib/supabase/client';
 
 export default function AuthAwareButtons({ variant = 'primary' }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,8 +13,8 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const supabase = await createSPASassClient();
-                const { data: { user } } = await supabase.getSupabaseClient().auth.getUser();
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
                 setIsAuthenticated(!!user);
             } catch (error) {
                 console.error('Error checking auth status:', error);
@@ -32,18 +34,18 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
     if (variant === 'nav') {
         return isAuthenticated ? (
             <Link
-                href="/app"
+                href="/marketplace"
                 className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
             >
-                Go to Dashboard
+                Go to Marketplace
             </Link>
         ) : (
             <>
-                <Link href="/auth/login" className="text-gray-600 hover:text-gray-900">
+                <Link href="/auth" className="text-gray-600 hover:text-gray-900">
                     Login
                 </Link>
                 <Link
-                    href="/auth/register"
+                    href="/auth"
                     className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
                 >
                     Get Started
@@ -55,19 +57,19 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
     // Primary buttons for the hero section
     return isAuthenticated ? (
         <Link
-            href="/app"
+            href="/marketplace"
             className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
         >
-            Go to Dashboard
+            Go to Marketplace
             <ArrowRight className="ml-2 h-5 w-5" />
         </Link>
     ) : (
         <>
             <Link
-                href="/auth/register"
+                href="/auth"
                 className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
             >
-                Start Building Free
+                Start For Free
                 <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
@@ -80,3 +82,4 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
         </>
     );
 }
+

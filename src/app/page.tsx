@@ -59,9 +59,14 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
               <div className="flex-shrink-0">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                {productName}
-              </span>
+                <Link href="/" className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <span className="text-white font-bold">AE</span>
+                    </div>
+                     <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+                        {productName}
+                    </span>
+                </Link>
               </div>
               <div className="hidden md:flex items-center space-x-8">
                 <Link href="#features" className="text-gray-600 hover:text-gray-900">
@@ -72,23 +77,13 @@ export default function Home() {
                   Pricing
                 </Link>
                 <Link
-                    href="https://github.com/Razikus/supabase-nextjs-template"
+                    href="https://github.com/AfriConnectExchange/studio"
                     className="text-gray-600 hover:text-gray-900"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
                   Documentation
                 </Link>
-
-                <Link
-                    href="https://github.com/Razikus/supabase-nextjs-template"
-                    className="bg-primary-800 text-white px-4 py-2 rounded-lg hover:bg-primary-900 transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                  Grab This Template
-                </Link>
-
                 <AuthAwareButtons variant="nav" />
               </div>
             </div>
@@ -99,11 +94,11 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-                Bootstrap Your SaaS
-                <span className="block text-primary-600">In 5 minutes</span>
+                Connect, Trade, and Thrive
+                <span className="block text-primary-600">Across Africa</span>
               </h1>
               <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-                Launch your SaaS product in days, not months. Complete with authentication and enterprise-grade security built right in.
+                The premier digital marketplace for authentic African goods, skills training, and secure financial services.
               </p>
               <div className="mt-10 flex gap-4 justify-center">
 
@@ -161,7 +156,7 @@ export default function Home() {
               Join thousands of developers building their SaaS with {productName}
             </p>
             <Link
-                href="/auth/register"
+                href="/auth"
                 className="mt-8 inline-flex items-center px-6 py-3 rounded-lg bg-white text-primary-600 font-medium hover:bg-primary-50 transition-colors"
             >
               Get Started Now
@@ -192,7 +187,7 @@ export default function Home() {
                 <h4 className="text-sm font-semibold text-gray-900">Resources</h4>
                 <ul className="mt-4 space-y-2">
                   <li>
-                    <Link href="https://github.com/Razikus/supabase-nextjs-template" className="text-gray-600 hover:text-gray-900">
+                    <Link href="https://github.com/AfriConnectExchange/studio" className="text-gray-600 hover:text-gray-900">
                       Documentation
                     </Link>
                   </li>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { createSPAClient as createClient } from '@/lib/supabase/client';
+import { createSPASassClient } from '@/lib/supabase/client';
 import type { AuthError } from '@supabase/supabase-js';
 
 import SignInCard from '@/components/auth/SignInCard';
@@ -38,25 +38,34 @@ export default function AuthPage() {
 
   const { toast } = useToast();
   const router = useRouter();
-  const supabase = createClient();
   
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        router.push('/forgot-password');
-      }
-      if (event === "SIGNED_IN") {
-        router.push('/marketplace');
-      }
-      if (event === "USER_UPDATED" && isVerifying) {
-        setIsVerifying(false);
-        toast({ title: "Email verified!", description: "You can now sign in." });
-        setView('signIn');
-      }
-    });
+    const checkAuthAndRedirect = async () => {
+        const supabase = await createSPASassClient();
+        const client = supabase.getSupabaseClient();
+        const { data: { session } } = await client.auth.getSession();
+        if (session) {
+            router.push('/marketplace');
+        }
 
-    return () => subscription.unsubscribe();
-  }, [router, supabase, isVerifying]);
+        const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY") {
+            router.push('/forgot-password');
+          }
+          if (event === "SIGNED_IN") {
+            router.push('/auth/verify-session');
+          }
+          if (event === "USER_UPDATED" && isVerifying) {
+            setIsVerifying(false);
+            toast({ title: "Email verified!", description: "You can now sign in." });
+            setView('signIn');
+          }
+        });
+
+        return () => subscription.unsubscribe();
+    }
+    checkAuthAndRedirect();
+  }, [router, isVerifying, toast]);
 
 
   const handleError = (error: AuthError, defaultMessage: string) => {
@@ -86,15 +95,8 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          full_name: formData.name,
-        },
-      },
-    });
+    const supabase = await createSPASassClient();
+    const { error } = await supabase.registerEmail(formData.email, formData.password);
     
     if (error) {
         handleError(error, 'Failed to register.');
@@ -116,7 +118,10 @@ export default function AuthPage() {
     }
     
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
+    const supabase = await createSPASassClient();
+    const client = supabase.getSupabaseClient();
+
+    const { error } = await client.auth.signInWithOtp({
       phone: formData.phone,
        options: {
         data: {
@@ -136,10 +141,8 @@ export default function AuthPage() {
 
   const handleEmailLogin = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+    const supabase = await createSPASassClient();
+    const { error } = await supabase.loginEmail(formData.email, formData.password);
 
     if (error) {
       handleError(error, 'Failed to sign in.');
@@ -150,7 +153,10 @@ export default function AuthPage() {
   
   const handlePhoneLogin = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
+    const supabase = await createSPASassClient();
+    const client = supabase.getSupabaseClient();
+
+    const { error } = await client.auth.signInWithOtp({
       phone: formData.phone,
     });
 
@@ -165,7 +171,10 @@ export default function AuthPage() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
+    const supabase = await createSPASassClient();
+    const client = supabase.getSupabaseClient();
+
+    const { error } = await client.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
@@ -179,7 +188,10 @@ export default function AuthPage() {
 
   const handleOTPComplete = async (otp: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
+    const supabase = await createSPASassClient();
+    const client = supabase.getSupabaseClient();
+
+    const { error } = await client.auth.verifyOtp({
       phone: formData.phone,
       token: otp,
       type: 'sms',
